@@ -15,11 +15,37 @@
 
   // ---------------- login screen ----------------
   const css = `
-  #kkAuth{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;
-    background:linear-gradient(160deg,#cfe6ff 0%,#e7ddff 55%,#ffe3ee 100%)}
-  html.dark #kkAuth{background:linear-gradient(160deg,#16204a,#2b1d55 60%,#3a1d3c)}
-  #kkAuth .box{width:100%;max-width:380px;background:var(--card);border-radius:28px;padding:26px 22px;box-shadow:0 20px 60px rgba(40,40,90,.18)}
-  #kkAuth .logo{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;font-size:32px;margin:0 auto 10px;background:linear-gradient(135deg,#bfe0ff,#e3d6ff)}
+  #kkAuth{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;
+    background:linear-gradient(160deg,#cfe6ff,#e7ddff,#ffe3ee,#d6f3ff);background-size:300% 300%;animation:kkbg 14s ease infinite;transition:opacity .45s ease}
+  html.dark #kkAuth{background:linear-gradient(160deg,#16204a,#2b1d55,#3a1d3c,#152a4a);background-size:300% 300%}
+  @keyframes kkbg{0%,100%{background-position:0% 30%}50%{background-position:100% 70%}}
+  #kkAuth .blob{position:absolute;border-radius:50%;filter:blur(30px);opacity:.55;animation:kkblob 12s ease-in-out infinite}
+  #kkAuth .b1{width:240px;height:240px;background:#a9d4ff;top:-60px;left:-60px}
+  #kkAuth .b2{width:260px;height:260px;background:#e2c9ff;bottom:-80px;right:-70px;animation-delay:-4s}
+  #kkAuth .b3{width:180px;height:180px;background:#ffd0e1;top:40%;left:65%;animation-delay:-8s}
+  @keyframes kkblob{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,40px) scale(1.12)}66%{transform:translate(-25px,15px) scale(.92)}}
+  #kkAuth .fl{position:absolute;bottom:-40px;font-size:22px;opacity:0;animation:kkfloat linear infinite;pointer-events:none}
+  @keyframes kkfloat{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.85}90%{opacity:.85}100%{transform:translateY(-110vh) rotate(200deg);opacity:0}}
+  #kkAuth .box{position:relative;width:100%;max-width:380px;background:var(--card);border-radius:28px;padding:26px 22px;box-shadow:0 20px 60px rgba(40,40,90,.18);
+    animation:kkpop .7s cubic-bezier(.2,.9,.3,1.25) both;transition:transform .45s ease,opacity .45s ease}
+  @keyframes kkpop{from{opacity:0;transform:translateY(40px) scale(.9)}to{opacity:1;transform:none}}
+  #kkAuth .box>*{animation:kkrise .5s ease both}
+  #kkAuth .box>*:nth-child(2){animation-delay:.15s}#kkAuth .box>*:nth-child(3){animation-delay:.22s}#kkAuth .box>*:nth-child(4){animation-delay:.3s}#kkAuth .box>*:nth-child(n+5){animation-delay:.38s}
+  @keyframes kkrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  #kkAuth .logo{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;font-size:32px;margin:0 auto 10px;background:linear-gradient(135deg,#bfe0ff,#e3d6ff);
+    animation:kklogo .8s cubic-bezier(.2,.9,.3,1.5) .1s both,kkbounce 3s ease-in-out 1s infinite}
+  @keyframes kklogo{from{transform:scale(0) rotate(-30deg)}to{transform:none}}
+  @keyframes kkbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  #kkAuth.shake .box{animation:kkshake .45s ease}
+  @keyframes kkshake{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+  #kkAuth.bye{opacity:0;pointer-events:none}
+  #kkAuth.bye .box{transform:translateY(-30px) scale(.95);opacity:0}
+  #kkAuth.bye .logo{animation:kkyay .45s ease both}
+  @keyframes kkyay{to{transform:scale(1.4) rotate(15deg)}}
+  #kkAuth .btn{transition:transform .12s ease}#kkAuth .btn:active{transform:scale(.97)}
+  #kkAuth .dots::after{content:'';animation:kkdots 1.2s steps(4) infinite}
+  @keyframes kkdots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+  @media (prefers-reduced-motion: reduce){#kkAuth,#kkAuth *{animation:none!important;transition:none!important}}
   #kkAuth h2{text-align:center;font-size:22px;font-weight:800;letter-spacing:-.4px}
   #kkAuth p.s{text-align:center;color:var(--muted);font-size:13px;margin:4px 0 16px;line-height:1.5}
   #kkAuth .err{background:var(--exp-soft);color:var(--exp);font-size:12.5px;padding:9px 11px;border-radius:12px;margin-top:12px;display:none;line-height:1.5}
@@ -32,7 +58,7 @@
   let mode = 'login';
   function authHtml(msg) {
     const reg = mode === 'register';
-    return `<div class="box"><div class="logo">💰</div><h2>Dompet Keluarga</h2>
+    return `<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>${floaters()}<div class="box"><div class="logo">💰</div><h2>Dompet Keluarga</h2>
       <p class="s">${reg ? 'Buat akun dengan email yang sudah didaftarkan sebagai anggota keluarga.' : 'Masuk untuk membuka keuangan & goals keluargamu.'}</p>
       <form id="kkForm" autocomplete="on">
         <label>${reg ? 'Email' : 'Email atau username'}</label><input id="kkEmail" type="${reg ? 'email' : 'text'}" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required placeholder="${reg ? 'nama@email.com' : 'nama@email.com atau username'}">
@@ -43,7 +69,12 @@
       <div class="err" id="kkErr">${esc(msg || '')}</div>
       <div class="sw2">${reg ? 'Sudah punya akun?' : 'Belum punya akun?'} <button type="button" id="kkSwitch">${reg ? 'Masuk' : 'Daftar'}</button></div></div>`;
   }
-  function showErr(m, ok) { const e = $('kkErr'); if (!e) return; e.textContent = m; e.style.display = m ? 'block' : 'none'; e.classList.toggle('ok', !!ok); }
+  function floaters() {
+    const em = ['💰', '✨', '🌸', '🪙', '💌', '🎯', '🌱', '💎'];
+    return em.map((e, i) => `<span class="fl" style="left:${(i * 13 + 4) % 96}%;animation-duration:${11 + (i % 4) * 3}s;animation-delay:${-i * 1.7}s;font-size:${16 + (i % 3) * 6}px">${e}</span>`).join('');
+  }
+  function shake() { const el = $('kkAuth'); if (!el) return; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+  function showErr(m, ok) { const e = $('kkErr'); if (!e) return; e.textContent = m; e.style.display = m ? 'block' : 'none'; e.classList.toggle('ok', !!ok); if (m && !ok) shake(); }
   function showLogin(msg) {
     let el = $('kkAuth');
     if (!el) { el = document.createElement('div'); el.id = 'kkAuth'; document.body.appendChild(el); }
@@ -54,7 +85,7 @@
       const raw = $('kkEmail').value.trim().toLowerCase(), pass = $('kkPass').value;
       const email = raw.includes('@') ? raw : raw.replace(/[^a-z0-9._-]/g, '') + '@' + USER_DOMAIN;
       if (mode === 'register' && pass !== $('kkPass2').value) return showErr('Password tidak sama.');
-      $('kkGo').disabled = true; $('kkGo').textContent = 'Sebentar…';
+      $('kkGo').disabled = true; $('kkGo').innerHTML = '<span class="dots">Sebentar</span>';
       try {
         if (mode === 'register') {
           const { error } = await sb.auth.signUp({ email, password: pass });
@@ -74,7 +105,7 @@
       }
     };
   }
-  function hideLogin() { const el = $('kkAuth'); if (el) el.remove(); }
+  function hideLogin() { const el = $('kkAuth'); if (!el) return; el.classList.add('bye'); setTimeout(() => el.remove(), 480); }
 
   async function start() {
     const { data: member, error } = await sb.rpc('is_member');

@@ -231,6 +231,51 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri)}
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.6}}
 .fade{animation:fd .25s ease}
 @keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* entrance animations (only on first paint of a screen) */
+.anim>*{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+.anim>*:nth-child(1){animation-delay:0s}.anim>*:nth-child(2){animation-delay:.06s}.anim>*:nth-child(3){animation-delay:.12s}
+.anim>*:nth-child(4){animation-delay:.16s}.anim>*:nth-child(5){animation-delay:.2s}.anim>*:nth-child(6){animation-delay:.24s}
+.anim>*:nth-child(7){animation-delay:.28s}.anim>*:nth-child(8){animation-delay:.32s}.anim>*:nth-child(9){animation-delay:.36s}
+.anim>*:nth-child(n+10){animation-delay:.4s}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.anim .pockets>*,.anim .envs>*,.anim .glist>*{animation:pop .5s cubic-bezier(.2,.9,.3,1.2) both}
+.anim .pockets>*:nth-child(2),.anim .envs>*:nth-child(2),.anim .glist>*:nth-child(2){animation-delay:.08s}
+.anim .pockets>*:nth-child(3),.anim .envs>*:nth-child(3),.anim .glist>*:nth-child(3){animation-delay:.16s}
+.anim .pockets>*:nth-child(4),.anim .envs>*:nth-child(4){animation-delay:.24s}
+.anim .envs>*:nth-child(n+5){animation-delay:.3s}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
+.anim .bar i,.anim .spendbar i,.anim .alloc i{transform-origin:left;animation:grow 1s cubic-bezier(.2,.8,.2,1) .25s both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.anim .ring .pg{animation:ringin 1.1s cubic-bezier(.2,.8,.2,1) .3s both}
+@keyframes ringin{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+.anim .moodq button{animation:bob .6s ease both}
+.anim .moodq button:nth-child(2){animation-delay:.08s}.anim .moodq button:nth-child(3){animation-delay:.16s}.anim .moodq button:nth-child(4){animation-delay:.24s}.anim .moodq button:nth-child(5){animation-delay:.32s}
+@keyframes bob{0%{transform:translateY(8px);opacity:0}60%{transform:translateY(-4px);opacity:1}100%{transform:none}}
+/* ambient motion in the hero illustration */
+.scene .flt{animation:float 6s ease-in-out infinite}
+.scene .flt2{animation:float 8s ease-in-out infinite reverse}
+.scene .tw{animation:tw 2.6s ease-in-out infinite}
+.scene .tw:nth-of-type(3n){animation-delay:.9s}.scene .tw:nth-of-type(3n+1){animation-delay:1.7s}
+.scene .sway{transform-box:fill-box;transform-origin:center bottom;animation:sway 5s ease-in-out infinite}
+.scene .spin{transform-box:fill-box;transform-origin:center;animation:spin 18s linear infinite}
+.scene .wave{animation:wave 7s ease-in-out infinite}
+.scene .wave2{animation:wave 9s ease-in-out infinite reverse}
+.scene .shoot{animation:shoot 5s ease-in infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes tw{0%,100%{opacity:.9}50%{opacity:.25}}
+@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-14px)}}
+@keyframes shoot{0%,70%{opacity:0;transform:translate(0,0)}75%{opacity:1}100%{opacity:0;transform:translate(40px,-16px)}}
+/* tap feedback */
+.pocket,.env,.gitem,.quick button,.cell,.tx,.bookrow,.btn{transition:transform .12s ease}
+.pocket:active,.env:active,.gitem:active,.quick button:active,.bookrow:active{transform:scale(.97)}
+.btn:active{transform:scale(.97)} .cell:active{transform:scale(.92)} .tx:active{transform:scale(.99)}
+.streak.wig{animation:wig .9s ease .4s both}
+@keyframes wig{0%,100%{transform:none}20%{transform:rotate(-10deg) scale(1.1)}40%{transform:rotate(8deg) scale(1.1)}60%{transform:rotate(-5deg)}80%{transform:rotate(3deg)}}
+.fab.intro{animation:fabin .6s cubic-bezier(.2,.9,.3,1.4) .3s both}
+@keyframes fabin{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .bookbtn{border:0;background:transparent;display:flex;align-items:center;gap:8px;padding:2px 0;max-width:100%;text-align:left}
 .bookbtn .be{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:18px;flex-shrink:0;background:var(--heroBg)}
 .bookbtn h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -368,26 +413,26 @@ const SCENES={
     hero:'linear-gradient(180deg,#ffd6b3 0%,#f8e4d2 42%,#cde2ea 100%)', heroDark:'linear-gradient(180deg,#27324f 0%,#424a6b 50%,#5f5267 100%)',
     light:{'--bg':'#eef4f0','--soft':'#f0f6f2','--line':'#d7e5dc','--bgImg':'linear-gradient(180deg,#f3efe8 0%,#e9f2ee 100%)','--hero-glass':'rgba(255,255,255,.6)'},
     dark:{'--bg':'#101916','--card':'#17231e','--soft':'#1e2d27','--line':'#283a33','--bgImg':'linear-gradient(180deg,#141a22,#101916)'}}};
-function flower(x,y,r,c,ctr){ let p=''; for(let i=0;i<5;i++){ const a=i*72*Math.PI/180; p+=`<circle cx="${(x+Math.cos(a)*r*.9).toFixed(1)}" cy="${(y+Math.sin(a)*r*.9).toFixed(1)}" r="${(r*.62).toFixed(1)}" fill="${c}"/>`; } return p+`<circle cx="${x}" cy="${y}" r="${(r*.42).toFixed(1)}" fill="${ctr}"/>`; }
+function flower(x,y,r,c,ctr){ let p='<g class="sway">'; for(let i=0;i<5;i++){ const a=i*72*Math.PI/180; p+=`<circle cx="${(x+Math.cos(a)*r*.9).toFixed(1)}" cy="${(y+Math.sin(a)*r*.9).toFixed(1)}" r="${(r*.62).toFixed(1)}" fill="${c}"/>`; } return p+`<circle cx="${x}" cy="${y}" r="${(r*.42).toFixed(1)}" fill="${ctr}"/></g>`; }
 function sceneSvg(sc){
   const W='viewBox="0 0 360 220" preserveAspectRatio="xMaxYMax slice" xmlns="http://www.w3.org/2000/svg"';
-  if(sc==='pantai') return `<svg ${W}><circle cx="296" cy="52" r="42" fill="#fff7c9" opacity=".45"/><circle cx="296" cy="52" r="25" fill="#fff3b3"/>
-    <path d="M214 46q6-6 12 0q6-6 12 0M244 30q5-5 10 0q5-5 10 0" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M0 168Q45 152 90 168T180 168T270 168T360 168V220H0Z" fill="#7fcde9" opacity=".55"/><path d="M0 184Q45 170 90 184T180 184T270 184T360 184V220H0Z" fill="#55b6dc" opacity=".55"/>
+  if(sc==='pantai') return `<svg ${W}><g class="flt"><circle cx="296" cy="52" r="42" fill="#fff7c9" opacity=".45"/><circle cx="296" cy="52" r="25" fill="#fff3b3"/></g>
+    <path class="flt2" d="M214 46q6-6 12 0q6-6 12 0M244 30q5-5 10 0q5-5 10 0" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path class="wave" d="M0 168Q45 152 90 168T180 168T270 168T360 168T450 168V220H0Z" fill="#7fcde9" opacity=".55"/><path class="wave2" d="M-30 184Q15 170 60 184T150 184T240 184T330 184T420 184V220H-30Z" fill="#55b6dc" opacity=".55"/>
     <path d="M140 220Q250 192 360 200V220Z" fill="#f6dca8"/><path d="M332 208Q322 160 336 118" stroke="#9a6b3f" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M336 118q-32-8-46 12q22-16 46-12zM336 118q30-10 44 8q-22-12-44-8zM336 118q-14-26-38-26q24 6 38 26zM336 118q10-28 34-30q-22 8-34 30z" fill="#3aa877"/></svg>`;
+    <path class="sway" d="M336 118q-32-8-46 12q22-16 46-12zM336 118q30-10 44 8q-22-12-44-8zM336 118q-14-26-38-26q24 6 38 26zM336 118q10-28 34-30q-22 8-34 30z" fill="#3aa877"/></svg>`;
   if(sc==='bunga') return `<svg ${W}><ellipse cx="318" cy="200" rx="16" ry="6" fill="#8fd3a6" transform="rotate(-30 318 200)"/><ellipse cx="270" cy="212" rx="14" ry="5" fill="#8fd3a6" transform="rotate(25 270 212)"/>
     ${flower(322,40,15,'#ffffff','#ffd36b')}${flower(270,22,8,'#ffb3cf','#fff3b0')}${flower(340,186,20,'#ff9ec0','#ffe08a')}${flower(292,206,13,'#ffd1e0','#ffbd59')}${flower(352,108,9,'#e9d5ff','#ffe08a')}${flower(232,214,8,'#ffffff','#ff9ec0')}</svg>`;
-  if(sc==='galaksi'){ let st=''; for(let i=0;i<46;i++){ const x=(i*71+13)%360, y=(i*43+29)%220, r=i%7===0?1.8:i%3===0?1.1:.7; st+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${i%4?.85:.45}"/>`; }
+  if(sc==='galaksi'){ let st=''; for(let i=0;i<46;i++){ const x=(i*71+13)%360, y=(i*43+29)%220, r=i%7===0?1.8:i%3===0?1.1:.7; st+=`<circle ${i%3===0?'class="tw" ':''}cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${i%4?.85:.45}"/>`; }
     return `<svg ${W}><defs><linearGradient id="pl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa8dc"/><stop offset="1" stop-color="#7d6bff"/></linearGradient><linearGradient id="ss" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient></defs>
-    ${st}<circle cx="300" cy="62" r="24" fill="url(#pl)"/><ellipse cx="300" cy="62" rx="40" ry="9" fill="none" stroke="#ffd9f3" stroke-width="2.5" opacity=".8" transform="rotate(-18 300 62)"/>
-    <path d="M190 40L246 18" stroke="url(#ss)" stroke-width="2" stroke-linecap="round"/><circle cx="246" cy="18" r="2" fill="#fff"/><circle cx="340" cy="190" r="9" fill="#9ad7ff" opacity=".7"/></svg>`; }
-  if(sc==='gunung') return `<svg ${W}><circle cx="286" cy="66" r="24" fill="#fff4e0"/><circle cx="286" cy="66" r="38" fill="#fff4e0" opacity=".35"/>
+    ${st}<g class="flt"><circle cx="300" cy="62" r="24" fill="url(#pl)"/><ellipse cx="300" cy="62" rx="40" ry="9" fill="none" stroke="#ffd9f3" stroke-width="2.5" opacity=".8" transform="rotate(-18 300 62)"/></g>
+    <g class="shoot"><path d="M190 40L246 18" stroke="url(#ss)" stroke-width="2" stroke-linecap="round"/><circle cx="246" cy="18" r="2" fill="#fff"/></g><circle cx="340" cy="190" r="9" fill="#9ad7ff" opacity=".7"/></svg>`; }
+  if(sc==='gunung') return `<svg ${W}><g class="flt"><circle cx="286" cy="66" r="24" fill="#fff4e0"/><circle cx="286" cy="66" r="38" fill="#fff4e0" opacity=".35"/></g>
     <path d="M0 170L70 112L128 150L200 86L268 140L326 98L360 120V220H0Z" fill="#a8bfd6" opacity=".75"/><path d="M200 86L187 99L196 97L204 103L213 98ZM326 98L315 108L323 107L331 111L337 106Z" fill="#fff"/>
     <path d="M0 202L62 150L118 190L182 142L250 196L312 152L360 186V220H0Z" fill="#6f9c8a"/>
     <path d="M300 220L310 188L320 220ZM318 220L330 180L342 220ZM272 220L280 196L288 220Z" fill="#456f61"/></svg>`;
-  return `<svg ${W}><circle cx="330" cy="200" r="70" fill="#fff" opacity=".3"/><circle cx="250" cy="30" r="16" fill="#fff" opacity=".35"/><circle cx="345" cy="70" r="9" fill="#fff" opacity=".45"/>
-    <path d="M300 48l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#fff" opacity=".95"/><path d="M220 120l2.5 6.5 6.5 2.5-6.5 2.5-2.5 6.5-2.5-6.5-6.5-2.5 6.5-2.5z" fill="#fff" opacity=".8"/></svg>`;
+  return `<svg ${W}><circle cx="330" cy="200" r="70" fill="#fff" opacity=".3"/><circle class="flt" cx="250" cy="30" r="16" fill="#fff" opacity=".35"/><circle class="flt2" cx="345" cy="70" r="9" fill="#fff" opacity=".45"/>
+    <path class="tw" d="M300 48l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#fff" opacity=".95"/><path class="tw" d="M220 120l2.5 6.5 6.5 2.5-6.5 2.5-2.5 6.5-2.5-6.5-6.5-2.5 6.5-2.5z" fill="#fff" opacity=".8"/></svg>`;
 }
 function getMode(){ try{ return localStorage.getItem('kk_mode')||'auto'; }catch(e){ return 'auto'; } }
 const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : {matches:false};
@@ -520,11 +565,11 @@ function switchBook(key){
   if(key.startsWith('p:') && !me && db){ key='s:main'; }
   unsubs.forEach(u=>{try{u()}catch(e){}}); unsubs=[];
   S.bookKey=key; try{ localStorage.setItem('kk_book',key); }catch(e){}
-  if(!db){ const m=memBook(key); S.tx=m.tx; S.goals=m.goals; S.notes=m.notes; S.config=m.config; S.ready=true; fixTab(); render(); return; }
+  if(!db){ const m=memBook(key); S.tx=m.tx; S.goals=m.goals; S.notes=m.notes; S.config=m.config; S.ready=true; S.animNext=true; fixTab(); render(); return; }
   S.tx=[]; S.goals=[]; S.notes=[]; S.config={budgets:{},pocketStart:{}}; S.ready=false; render();
   const seen={}; const KEYS=['tx','goals','notes','cfg']; const myKey=key;
   const timer=setTimeout(()=>{ if(S.bookKey===myKey && !S.ready){ S.ready=true; $('sync').textContent='Belum terhubung · data mungkin belum terbaru'; render(); } },10000);
-  const mark=(k,snap)=>{ if(S.bookKey!==myKey) return; if(!seen[k] && snap.metadata && !snap.metadata.fromCache){ seen[k]=1; if(KEYS.every(x=>seen[x])){ clearTimeout(timer); S.ready=true; } } if(S.ready||KEYS.every(x=>seen[x])) render(); };
+  const mark=(k,snap)=>{ if(S.bookKey!==myKey) return; if(!seen[k] && snap.metadata && !snap.metadata.fromCache){ seen[k]=1; if(KEYS.every(x=>seen[x])){ clearTimeout(timer); S.ready=true; S.animNext=true; } } if(S.ready||KEYS.every(x=>seen[x])) render(); };
   const err=()=>{ if(S.bookKey!==myKey) return; clearTimeout(timer); S.ready=true; render(); $('sync').textContent='Koneksi data terputus — muat ulang halaman'; };
   try{
     unsubs.push(colRef('tx',key).onSnapshot(sn=>{ if(S.bookKey!==myKey) return; S.tx=sn.docs.map(d=>({...d.data(),id:d.id})); mark('tx',sn); },err));
@@ -638,6 +683,12 @@ function streak(){ const s=activeDays(); let d=today(); if(!s.has(d)) d=addDays(
 function avgMonthlyOut(){ const ms=[1,2,3].map(i=>shiftMonth(today().slice(0,7),-i)); const o=ms.map(m=>{const[a,b]=monthRange(m);return sums(txIn(a,b)).out}).filter(x=>x>0); return o.length?o.reduce((a,b)=>a+b,0)/o.length:0; }
 
 // ================= render =================
+const reduceMotion=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function countUp(root){
+  root.querySelectorAll('[data-count]').forEach(el=>{ const to=+el.dataset.count||0; if(!to) return; const t0=performance.now(), d=900;
+    const step=now=>{ const k=Math.min(1,(now-t0)/d), e=1-Math.pow(1-k,3); el.textContent=rp(to*e); if(k<1 && el.isConnected) requestAnimationFrame(step); else el.textContent=rp(to); };
+    requestAnimationFrame(step); });
+}
 function render(){
   const h=new Date().getHours();
   const scK=applyTheme(); const pf=window.kkHost&&window.kkHost.profile? window.kkHost.profile() : {};
@@ -649,7 +700,10 @@ function render(){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
   const v=$('view');
   if(!S.ready){ v.innerHTML='<div class="card empty"><span class="ee">⏳</span>Memuat data '+esc(bk.name)+'…</div>'; return; }
-  v.innerHTML = '<div class="fade">'+({home:vHome,money:vMoney,goals:vGoals,cal:vCal,notes:vNotes})[S.tab]()+'</div>';
+  const anim=S.animNext; S.animNext=false;
+  v.innerHTML = '<div class="fade'+(anim?' anim':'')+'">'+({home:vHome,money:vMoney,goals:vGoals,cal:vCal,notes:vNotes})[S.tab]()+'</div>';
+  if(anim && !reduceMotion()) countUp(v);
+  if(anim && !S.introDone){ S.introDone=true; $('fab').classList.add('intro'); $('streak').classList.add('wig'); setTimeout(()=>{$('fab').classList.remove('intro');$('streak').classList.remove('wig');},1600); }
   if(S.tab==='money') bindChart();
 }
 
@@ -670,7 +724,7 @@ function vHome(){
   <div class="card hero"><div class="scene">${sceneSvg(document.documentElement.dataset.scene)}</div>
     <div class="mrow"><span class="lbl">${isNow?'Sisa uang bulan ini':'Sisa uang '+mLabel(S.month)}</span>
       <div class="mpick"><button data-act="month" data-d="-1" aria-label="Bulan sebelumnya">‹</button><span>${mShort(S.month)}</span><button data-act="month" data-d="1" aria-label="Bulan berikutnya">›</button></div></div>
-    <div class="big">${rp(left)}</div>
+    <div class="big" data-count="${left}">${rp(left)}</div>
     <div class="hint2">Saldo dompet/kas: <b>${rp(cash())}</b></div>
     <div class="flow">
       <div><small>↓ Pemasukan</small><b>${rp(s.inc)}</b></div>
@@ -690,7 +744,7 @@ function vHome(){
 
   ${feat('alloc')?envSection():''}
   ${feat('pockets')?`<div class="sec"><h2>Tabungan</h2><button class="lnk" data-act="pocketSetup">Atur saldo</button></div>
-  <div class="totalsave"><small>Total semua kantong</small><b>${rp(bals.reduce((x,p)=>x+p.b,0))}</b></div>
+  <div class="totalsave"><small>Total semua kantong</small><b data-count="${bals.reduce((x,p)=>x+p.b,0)}">${rp(bals.reduce((x,p)=>x+p.b,0))}</b></div>
   ${alloc?`<div class="alloc">${alloc}</div>`:''}
   <div class="pockets">${bals.map(p=>`<button class="pocket" data-act="pocket" data-k="${p.k}"><span class="stripe" style="background:${p.c}"></span><div class="pe" style="background:${p.bg}">${p.e}</div><small>${esc(p.n)}</small><b>${rp(p.b)}</b></button>`).join('')}</div>`:''}
 
@@ -734,7 +788,7 @@ function insights(list,s){
   return out.map(([e,t])=>`<div class="insight"><div class="ie">${e}</div><p>${t}</p></div>`).join('');
 }
 
-function ring(pct,color,emoji){ const r=23,c=2*Math.PI*r; return `<div class="ring"><svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="${r}" fill="none" stroke="var(--soft)" stroke-width="5"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c*pct/100} ${c}"/></svg><span>${emoji}</span></div>`; }
+function ring(pct,color,emoji){ const r=23,c=2*Math.PI*r; return `<div class="ring"><svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="${r}" fill="none" stroke="var(--soft)" stroke-width="5"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" class="pg" style="--len:${(c*pct/100).toFixed(1)}" stroke-dasharray="${c*pct/100} ${c}"/></svg><span>${emoji}</span></div>`; }
 function goalItem(g,s){
   const when = g.deadline? (s.daysLeft>=0? (s.daysLeft>60? 'Tenggat '+parse(g.deadline).toLocaleDateString('id-ID',{month:'short',year:'numeric'}) : s.daysLeft+' hari lagi') : 'Tenggat '+dShort(g.deadline)) : 'Tanpa tenggat';
   return `<button class="gitem" data-act="goal" data-id="${esc(g.id)}">${ring(s.pct,s.remain?'var(--pri)':'var(--inc)',esc(g.emoji||'🎯'))}
@@ -1136,7 +1190,7 @@ function goalDeposit(id,t){
     $('dOk').disabled=true; const before=s.remain>0;
     rememberBank(bst.bank);
     const data={type:'goal',goalId:id,bank:bst.bank||'',env:feat('alloc')?(bst.envManual&&bst.env?bst.env:(autoEnv({type:'goal'})||'')):(t?.env||''),amount,cat:'Goal',date:$('dDate').value||today(),note:$('dNote').value.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null};
-    if(await save('tx',t?.id||uid(),data)){ close(); const now=goalSaved(id)>=g.target; if(before&&now){confetti();toast('MasyaAllah, goal tercapai! 🎉');} else toast('Setoran tercatat · '+Math.floor(goalStats(g).pct)+'% 🎯'); } else $('dOk').disabled=false; };
+    const newSaved=s.saved-(t?t.amount:0)+amount; if(await save('tx',t?.id||uid(),data)){ close(); const now=newSaved>=g.target; if(before&&now){confetti();toast('MasyaAllah, goal tercapai! 🎉');} else toast('Setoran tercatat · '+Math.floor(Math.min(100,newSaved/g.target*100))+'% 🎯'); } else $('dOk').disabled=false; };
 }
 function goalForm(g){
   let emoji=g?.emoji||'🛟'; const avg=avgMonthlyOut();
@@ -1306,14 +1360,14 @@ function confirmBox(msg,yes){
 
 // ================= events =================
 document.addEventListener('click',e=>{
-  const nb=e.target.closest('nav button[data-tab]'); if(nb){ S.tab=nb.dataset.tab; render(); scrollTo({top:0}); return; }
+  const nb=e.target.closest('nav button[data-tab]'); if(nb){ S.tab=nb.dataset.tab; S.animNext=true; render(); scrollTo({top:0}); return; }
   const el=e.target.closest('[data-act]'); if(!el) return;
   const a=el.dataset.act, d=el.dataset;
   if(el.tagName==='A') e.preventDefault();
   switch(a){
     case 'quick': if($('ov').classList.contains('show')) close(); else quick(); break;
-    case 'tab': S.tab=d.t; render(); scrollTo({top:0}); break;
-    case 'month': S.month=shiftMonth(S.month,+d.d); render(); break;
+    case 'tab': S.tab=d.t; S.animNext=true; render(); scrollTo({top:0}); break;
+    case 'month': S.month=shiftMonth(S.month,+d.d); S.animNext=true; render(); break;
     case 'period': S.period=d.p; render(); break;
     case 'pshift': { const n=+d.d; S.anchor = S.period==='day'? addDays(S.anchor,n) : S.period==='week'? addDays(weekStart(S.anchor),7*n) : shiftMonth(S.anchor.slice(0,7),n)+'-01'; render(); break; }
     case 'calM': S.calMonth=shiftMonth(S.calMonth,+d.d); S.calDay = S.calMonth===today().slice(0,7)? today() : S.calMonth+'-01'; render(); break;
