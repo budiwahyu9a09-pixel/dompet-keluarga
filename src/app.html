@@ -213,7 +213,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri)}
 .moods button.on{border-color:var(--pri);background:var(--pri-soft);transform:scale(1.04)}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
 .quick button{border:0;border-radius:20px;padding:16px 14px;text-align:left;display:flex;flex-direction:column;gap:8px;background:var(--soft)}
-.quick button:nth-child(1){background:var(--exp-soft)}.quick button:nth-child(2){background:var(--mint)}.quick button:nth-child(3){background:var(--pri-soft)}.quick button:nth-child(4){background:var(--lilac)}.quick button:nth-child(5){background:var(--butter)}
+.quick button:nth-child(1){background:var(--exp-soft)}.quick button:nth-child(2){background:var(--mint)}.quick button:nth-child(3){background:var(--pri-soft)}.quick button:nth-child(4){background:var(--lilac)}.quick button:nth-child(5){background:var(--butter)}.quick button:nth-child(6){background:var(--peach)}
 .quick button span{font-size:24px}
 .quick button b{font-size:14px} .quick button small{font-size:11.5px;color:var(--muted);margin-top:-6px}
 .emojis{display:flex;flex-wrap:wrap;gap:6px}
@@ -268,6 +268,33 @@ html.dark .scene{opacity:.8}
 .accents{display:flex;gap:10px;flex-wrap:wrap}
 .accents button{width:42px;height:42px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 2px var(--line)}
 .accents button.on{box-shadow:0 0 0 3px var(--ink)}
+.envs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.env{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:3px;min-width:0}
+.env .eh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.env .eh span{font-size:20px}.env .eh b{font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.env .eh i{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);background:var(--soft);padding:2px 7px;border-radius:99px}
+.env small{font-size:11.5px;color:var(--muted)}
+.env .ev{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.env .bar{margin:6px 0 2px;height:6px}
+.envpick button{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.envpick button small{color:var(--muted);font-weight:600}
+.envpick button.neg small{color:var(--exp)}
+.split{background:var(--soft);border-radius:16px;padding:6px 12px;margin-top:6px}
+.split .budget-in{border-bottom:1px solid var(--line)}
+.split .budget-in:last-child{border-bottom:0}
+.split .budget-in input{width:130px}
+.split .tot{font-size:12px;color:var(--muted);padding:8px 0 4px;display:flex;justify-content:space-between}
+.envedit{border:1.5px solid var(--line);border-radius:16px;padding:10px 12px;margin-bottom:10px;background:var(--bg)}
+.envedit .r1{display:flex;gap:8px;align-items:center}
+.envedit .r1 input{padding:9px}
+.envedit .r1 .em{width:52px;text-align:center;font-size:19px;padding:6px}
+.envedit .r1 .pc{width:78px;text-align:right}
+.envedit .r1 .x{border:0;background:var(--exp-soft);color:var(--exp);width:34px;height:38px;border-radius:10px;flex-shrink:0}
+.envedit details{margin-top:8px}
+.envedit summary{font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.envedit .picks button{font-size:11.5px;padding:5px 9px}
+.pcttotal{display:flex;justify-content:space-between;align-items:center;font-weight:800;padding:10px 12px;border-radius:14px;background:var(--inc-soft);color:var(--inc);margin:8px 0}
+.pcttotal.bad{background:var(--exp-soft);color:var(--exp)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
@@ -381,8 +408,13 @@ function applyTheme(){
 if(mq.addEventListener) mq.addEventListener('change',()=>{ applyTheme(); });
 function bookSwatch(b){ const sc=SCENES[b.scene]&&b.scene!=='pastel'? SCENES[b.scene] : null; const ac=ACCENTS[b.theme]||ACCENTS.biru; return sc? sc.hero : `linear-gradient(135deg,${ac.h[0]},${ac.h[2]})`; }
 const BOOK_EMOJI=['🏠','👤','💼','🏪','👶','🎓','🕌','✈️','💍','🐱','🎮','💰'];
-const FEATURES=[['pockets','🏦','Tabungan & kantong','Rekening, investasi, darurat, masa depan'],['goals','🎯','Goals','Target impian dengan progres'],['cal','📅','Kalender','Lihat transaksi & catatan per tanggal'],['notes','📝','Catatan harian','Mood, aktivitas, rasa syukur']];
-const ALL_ON={pockets:true,goals:true,cal:true,notes:true};
+const FEATURES=[['alloc','💌','Alokasi dana','Bagi pemasukan ke Operasional, Entertain, Darurat, Tabungan'],['pockets','🏦','Tabungan & kantong','Rekening, investasi, darurat, masa depan'],['goals','🎯','Goals','Target impian dengan progres'],['cal','📅','Kalender','Lihat transaksi & catatan per tanggal'],['notes','📝','Catatan harian','Mood, aktivitas, rasa syukur']];
+const ALL_ON={alloc:true,pockets:true,goals:true,cal:true,notes:true};
+const DEFAULT_ENVS=[
+  {k:'operasional',n:'Operasional',e:'🧾',pct:50,cats:['Makan & Dapur','Transportasi','Tagihan & Utilitas','Cicilan & Utang','Pendidikan','Kesehatan','Kebutuhan Rumah','Anak','Lainnya']},
+  {k:'entertain',n:'Entertain',e:'🎉',pct:15,cats:['Hiburan & Jajan','Keluarga & Sosial','Sedekah & Zakat']},
+  {k:'darurat',n:'Darurat',e:'🛟',pct:10,cats:[]},
+  {k:'tabungan',n:'Tabungan',e:'🌱',pct:25,cats:[]}];
 const DEFAULT_BANKS=['Tunai','BCA','Mandiri','BRI','BNI','BSI','Jago','SeaBank','blu','GoPay','OVO','DANA','ShopeePay'];
 const BANK_COLORS={Tunai:'#d9f5e8',BCA:'#cfe3ff',Mandiri:'#fff0c2',BRI:'#d6e6ff',BNI:'#ffe1cc',BSI:'#d4f3ec',Jago:'#ffe9a8',SeaBank:'#ffd9cc',blu:'#d3f1ff',GoPay:'#d4f7e2',OVO:'#e6dcff',DANA:'#d6ebff',ShopeePay:'#ffdccf'};
 const PASTELS=['#cfe3ff','#e6dcff','#d4f7e2','#ffe1cc','#fff0c2','#ffdcea','#d3f1ff'];
@@ -561,6 +593,45 @@ function goalChip(g,s){
   if(s.perMonth!=null) return s.avg>0&&s.avg>=s.perMonth? '<span class="chip ok">Sesuai jalur</span>' : `<span class="chip">${rpS(s.perMonth)}/bln</span>`;
   return '';
 }
+// ----- alokasi dana (amplop) -----
+const envs = () => (S.config.envs&&S.config.envs.length)? S.config.envs : DEFAULT_ENVS;
+const envK = k => envs().find(e=>e.k===k);
+function autoEnv(t){
+  const E=envs(), has=k=>E.some(e=>e.k===k);
+  if(t.type==='out') return (E.find(e=>(e.cats||[]).includes(t.cat))||E[0]).k;
+  if(t.type==='save') return t.pocket==='darurat'&&has('darurat')?'darurat':has('tabungan')?'tabungan':null;
+  if(t.type==='goal') return has('tabungan')?'tabungan':null;
+  return null;
+}
+function envOf(t){ if(!feat('alloc')) return null; if(t.env && envK(t.env)) return t.env; return autoEnv(t); }
+function autoSplit(amount){ const E=envs(); const tot=E.reduce((a,e)=>a+(+e.pct||0),0)||100; const out={}; let used=0;
+  E.forEach((e,i)=>{ const v=i===E.length-1? amount-used : Math.floor(amount*(+e.pct||0)/tot); out[e.k]=v; used+=v; }); return out; }
+function splitOf(t){ if(t.split && Object.keys(t.split).some(k=>envK(k))) return t.split; return autoSplit(t.amount); }
+// effect of a tx on each envelope: {k: +/-amount}
+function envEffect(t){
+  const r={};
+  if(t.type==='in'){ const sp=splitOf(t); for(const k in sp) if(envK(k)) r[k]=(r[k]||0)+sp[k]; return r; }
+  if(t.type==='envmove'){ if(envK(t.from)) r[t.from]=-t.amount; if(envK(t.to)) r[t.to]=(r[t.to]||0)+t.amount; return r; }
+  const k=envOf(t); if(!k) return r;
+  if(t.type==='out'||t.type==='goal') r[k]=-t.amount;
+  else if(t.type==='save') r[k]= t.dir==='out'? t.amount : -t.amount;
+  return r;
+}
+function envStats(a,b){ // per env: start balance before a, in/out within [a,b], balance now
+  const E=envs(), st=S.config.envStart||{}, o={};
+  E.forEach(e=>o[e.k]={before:st[e.k]||0,inn:0,out:0,bal:st[e.k]||0});
+  for(const t of S.tx){ const ef=envEffect(t); for(const k in ef){ if(!o[k]) continue; const v=ef[k]; o[k].bal+=v;
+    if(a && t.date<a) o[k].before+=v; else if(!a || t.date<=b){ if(v>=0) o[k].inn+=v; else o[k].out+=-v; } } }
+  return o;
+}
+const envBal = k => envStats()[k]?.bal||0;
+function envPicker(sel,label,note){
+  const st=envStats();
+  return `<label>${label}</label><div class="picks envpick" id="envPick">${envs().map(e=>{ const b=st[e.k].bal; return `<button type="button" data-env="${esc(e.k)}" class="${e.k===sel?'on':''} ${b<0?'neg':''}">${esc(e.e)} ${esc(e.n)} <small>${rpS(b)}</small></button>`; }).join('')}</div>${note?`<p class="hint" style="margin-top:6px">${note}</p>`:''}`;
+}
+function bindEnvPicker(st,onPick){ const w=$('envPick'); if(!w) return; w.querySelectorAll('[data-env]').forEach(x=>x.onclick=()=>{ st.env=x.dataset.env; st.envManual=true; w.querySelectorAll('[data-env]').forEach(y=>y.classList.toggle('on',y===x)); onPick&&onPick(); }); }
+function setEnvPick(k){ const w=$('envPick'); if(!w) return; w.querySelectorAll('[data-env]').forEach(y=>y.classList.toggle('on',y.dataset.env===k)); }
+
 function catSpend(list){ const r={}; for(const t of list) if(t.type==='out') r[t.cat]=(r[t.cat]||0)+t.amount; return r; }
 function activeDays(){ const s=new Set(); S.tx.forEach(t=>s.add(t.date)); S.notes.forEach(n=>s.add(n.date)); return s; }
 function streak(){ const s=activeDays(); let d=today(); if(!s.has(d)) d=addDays(d,-1); let n=0; while(s.has(d)){ n++; d=addDays(d,-1);} return n; }
@@ -616,6 +687,7 @@ function vHome(){
     </div>`:''}
   </div>
 
+  ${feat('alloc')?envSection():''}
   ${feat('pockets')?`<div class="sec"><h2>Tabungan</h2><button class="lnk" data-act="pocketSetup">Atur saldo</button></div>
   <div class="totalsave"><small>Total semua kantong</small><b>${rp(bals.reduce((x,p)=>x+p.b,0))}</b></div>
   ${alloc?`<div class="alloc">${alloc}</div>`:''}
@@ -632,6 +704,15 @@ function vHome(){
 }
 const byNew=(a,b)=>(b.date+(b.createdAt||'')).localeCompare(a.date+(a.createdAt||''));
 
+function envSection(){
+  const [a,b]=monthRange(S.month); const st=envStats(a,b);
+  return `<div class="sec"><h2>Alokasi dana</h2><button class="lnk" data-act="envSetup">Atur</button></div>
+  <div class="envs">${envs().map(e=>{ const x=st[e.k]; const avail=x.before+x.inn; const used=avail>0?Math.min(100,x.out/avail*100):(x.out?100:0);
+    const cls=x.bal<0||used>=100?'over':used>80?'warn':'';
+    return `<button class="env" data-act="env" data-k="${esc(e.k)}"><div class="eh"><span>${esc(e.e)}</span><b>${esc(e.n)}</b><i>${+e.pct||0}%</i></div>
+    <small>Sisa</small><div class="ev" style="${x.bal<0?'color:var(--exp)':''}">${rp(x.bal)}</div>
+    <div class="bar"><i class="${cls}" style="width:${used}%"></i></div><small>Terpakai ${rpS(x.out)} dari ${rpS(Math.max(avail,0))}</small></button>`; }).join('')}</div>`;
+}
 function insights(list,s){
   const out=[]; const sp=catSpend(list); const bud=S.config.budgets||{};
   const top=Object.entries(sp).sort((a,b)=>b[1]-a[1])[0];
@@ -642,6 +723,9 @@ function insights(list,s){
   if(over.length) out.push(['🚨',`Melewati anggaran: <b>${over.map(esc).join(', ')}</b>.`]);
   else if(near.length) out.push(['⚠️',`Hampir habis (>80%): <b>${near.map(esc).join(', ')}</b>.`]);
   else if(!Object.keys(bud).length) out.push(['🧭',`Belum ada anggaran. <a href="#" data-act="budget" style="color:var(--pri);font-weight:700">Atur batas per kategori</a> supaya pengeluaran lebih terkendali.`]);
+  if(feat('alloc')){ const [ea,eb]=monthRange(S.month); const es=envStats(ea,eb); const neg=envs().filter(e=>es[e.k].bal<0); const hi=envs().filter(e=>{const x=es[e.k],av=x.before+x.inn; return x.bal>=0&&av>0&&x.out/av>.8;});
+    if(neg.length) out.unshift(['💌',`Amplop <b>${neg.map(e=>esc(e.n)).join(', ')}</b> minus. Pindahkan dana dari amplop lain atau kurangi pengeluarannya.`]);
+    else if(hi.length) out.unshift(['💌',`Amplop <b>${hi.map(e=>esc(e.n)).join(', ')}</b> sudah terpakai lebih dari 80% bulan ini.`]); }
   const em=pocketBal('darurat'), avg=avgMonthlyOut();
   if(avg && feat('pockets')) { const x=em/avg; out.push(['🛟', x>=6? `Dana darurat sudah <b>${x.toFixed(1)}× pengeluaran bulanan</b>. Aman! 👏` : `Dana darurat baru <b>${x.toFixed(1)}×</b> pengeluaran bulanan. Idealnya 6× (${rpS(avg*6)}) untuk keluarga.`]); }
   if(s.inc){ const r=s.saved/s.inc*100; out.push([r>=20?'🌟':'💡', r>=20? `Kamu menabung <b>${Math.round(r)}%</b> dari pemasukan. Di atas target 20% — keren!` : `Porsi tabungan bulan ini <b>${Math.round(r)}%</b>. Coba sisihkan 20% di awal bulan (${rpS(s.inc*.2)}).`]); }
@@ -661,9 +745,11 @@ function txRow(t){
   let title,sub,ic,cls,sign,amtCls;
   if(t.type==='goal'){ const g=S.goals.find(x=>x.id===t.goalId); title='Setor ke '+(g?g.name:'goal'); sub=t.note||'Tabungan goal'; ic=g?.emoji||'🎯'; cls=''; sign='→ '; amtCls='mv'; }
   else if(t.type==='save'){ const p=pk(t.pocket)||{n:'Tabungan',e:'💰'}; title=(t.dir==='out'?'Tarik dari ':'Setor ke ')+p.n; sub=t.note||'Pindah dana'; ic=p.e; cls=''; sign=t.dir==='out'?'← ':'→ '; amtCls='mv'; }
+  else if(t.type==='envmove'){ const f=envK(t.from), to=envK(t.to); title='Pindah amplop'; sub=(f?f.n:'?')+' → '+(to?to.n:'?')+(t.note?' · '+t.note:''); ic='💌'; cls=''; sign=''; amtCls='mv'; }
   else if(t.type==='adj'){ const p=pk(t.pocket)||{n:'Tabungan',e:'💰'}; title='Penyesuaian '+p.n; sub=t.note||(t.amount>=0?'Nilai naik':'Nilai turun'); ic='📊'; cls=''; sign=t.amount>=0?'+':''; amtCls='mv'; }
   else { title=t.note||t.cat; sub=t.note?t.cat:dShort(t.date); ic=catIcon(t.type,t.cat); cls=t.type; sign=t.type==='in'?'+':'−'; amtCls=t.type; }
   if(t.bank) sub += ' · '+t.bank;
+  if((t.type==='out'||t.type==='goal'||t.type==='save') && feat('alloc')){ const ek=envOf(t), e=ek&&envK(ek); if(e) sub += ' · '+e.e+' '+e.n; }
   return `<li class="tx" data-act="tx" data-id="${esc(t.id)}"><div class="ic ${cls}">${ic}</div><div class="mid"><b>${esc(title)}</b><small>${esc(sub)}</small></div><div class="amt ${amtCls}">${sign}${rp(Math.abs(t.amount)).replace('−','')}</div></li>`;
 }
 
@@ -700,9 +786,15 @@ function vMoney(){
   </div>
   <div class="sec"><h2>${isMonth?'Kategori & anggaran':'Per kategori'}</h2>${isMonth?'<button class="lnk" data-act="budget">Atur anggaran</button>':''}</div>
   <div class="card">${catHtml}</div>
+  ${feat('alloc')?envPeriod(a,b):''}
   ${bankSummary(list)}
   <div class="sec"><h2>Rincian</h2><button class="lnk" data-act="txNew" data-date="${S.period==='day'?a:''}">+ Catat</button></div>
   <div class="card">${html||'<div class="empty"><span class="ee">🧾</span>Tidak ada transaksi di periode ini.</div>'}</div>`;
+}
+function envPeriod(a,b){
+  const st=envStats(a,b);
+  return `<div class="sec"><h2>Amplop</h2><button class="lnk" data-act="envMove">↔ Pindah dana</button></div><div class="card">${envs().map(e=>{ const x=st[e.k];
+    return `<div class="bankrow" data-act="env" data-k="${esc(e.k)}" role="button"><i class="bb" style="background:var(--pri-soft);font-size:16px">${esc(e.e)}</i><div class="bm"><b>${esc(e.n)}</b><small>masuk ${rpS(x.inn)} · pakai ${rpS(x.out)}</small></div><div class="br" style="${x.bal<0?'color:var(--exp)':''}">${rpS(x.bal)}<br><small style="font-weight:500;color:var(--muted)">sisa</small></div></div>`; }).join('')}</div>`;
 }
 function bankSummary(list){
   const m={}; for(const t of list){ if(!t.bank||t.type==='adj') continue; const r=m[t.bank]=m[t.bank]||{inc:0,out:0,sav:0};
@@ -833,6 +925,7 @@ function quick(){
     <button data-act="txNew" data-type="out"><span>💸</span><b>Pengeluaran</b><small>Belanja, tagihan, jajan</small></button>
     <button data-act="txNew" data-type="in"><span>💰</span><b>Pemasukan</b><small>Gaji, usaha, bonus</small></button>
     ${feat('pockets')?'<button data-act="pocketMove"><span>🏦</span><b>Menabung</b><small>Setor ke kantong tabungan</small></button>':''}
+    ${feat('alloc')?'<button data-act="envMove"><span>💌</span><b>Pindah amplop</b><small>Geser dana antar alokasi</small></button>':''}
     ${feat('goals')?'<button data-act="goalPick"><span>🎯</span><b>Setor goal</b><small>Isi target impian</small></button>':''}
     ${feat('notes')?'<button data-act="noteNew" style="grid-column:span 2"><span>📝</span><b>Catatan harian</b><small>Aktivitas, mood, & rasa syukur hari ini</small></button>':''}</div>
     <p class="hint" style="margin-top:12px;text-align:center">Dicatat ke pos <b>${esc(curBook().emoji||'')} ${esc(curBook().name)}</b></p>`);
@@ -841,7 +934,8 @@ function quick(){
 function txForm(t,preset={}){
   if(t && t.type==='goal') return goalDeposit(t.goalId,t);
   if(t && (t.type==='save'||t.type==='adj')) return pocketMove(t.pocket,t);
-  const edit=!!t; let st={type:t?.type||preset.type||'out',cat:t?.cat||null,amount:t?.amount||0,date:t?.date||preset.date||defaultDate(),note:t?.note||'',bank:t?(t.bank||''):(lastBank()||'Tunai')};
+  if(t && t.type==='envmove') return envMoveForm(null,t);
+  const edit=!!t; let st={type:t?.type||preset.type||'out',cat:t?.cat||null,amount:t?.amount||0,date:t?.date||preset.date||defaultDate(),note:t?.note||'',bank:t?(t.bank||''):(lastBank()||'Tunai'),env:t?.env||'',envManual:!!t?.env,split:t?.split?{...t.split}:null,splitManual:!!t?.split};
   const draw=()=>{
     const cats=st.type==='in'?IN_CATS:OUT_CATS; if(!cats.find(c=>c[0]===st.cat)) st.cat=cats[0][0];
     open(`<h3>${edit?'Ubah':'Catat'} ${st.type==='in'?'pemasukan':'pengeluaran'}</h3>
@@ -849,11 +943,26 @@ function txForm(t,preset={}){
     <input class="mny money" id="fAmt" inputmode="numeric" placeholder="Rp 0" value="${fmtN(st.amount)}" aria-label="Jumlah">
     <label>Kategori</label><div class="catgrid">${cats.map(([c,e])=>`<button data-c="${esc(c)}" class="${st.cat===c?'on':''}"><span>${e}</span>${esc(c)}</button>`).join('')}</div>
     ${bankPicker(st.bank, st.type==='in'?'Masuk ke rekening':'Bayar pakai')}
+    ${feat('alloc')? (st.type==='out'? envPicker(st.env||autoEnv({type:'out',cat:st.cat}),'Ambil dari amplop') : splitHtml()) : ''}
     <div class="two"><div><label>Tanggal</label><input type="date" id="fDate" value="${st.date}"></div><div><label>Catatan</label><input id="fNote" maxlength="120" placeholder="mis. belanja pasar" value="${esc(st.note)}"></div></div>
     <div class="actions">${edit?'<button class="btn danger" id="fDel">Hapus</button>':''}<button class="btn ghost" id="fX">Batal</button><button class="btn" id="fOk">Simpan</button></div>`);
     const keep=()=>{st.amount=num($('fAmt').value);st.date=$('fDate').value;st.note=$('fNote').value;};
+    function splitHtml(){ const sp=st.splitManual&&st.split? st.split : autoSplit(st.amount||0);
+      return `<label>Dibagi ke amplop</label><div class="split" id="splitBox">${envs().map(e=>`<div class="budget-in"><span>${esc(e.e)} ${esc(e.n)}<small>${+e.pct||0}%</small></span><input class="mny" inputmode="numeric" data-sp="${esc(e.k)}" value="${fmtN(sp[e.k]||0)||'0'}"></div>`).join('')}
+        <div class="tot"><span id="spInfo"></span><button type="button" class="lnk" id="spAuto" style="border:0;background:none;color:var(--pri);font-weight:700">Bagi otomatis</button></div></div>`; }
+    function refreshSplit(){ const box=$('splitBox'); if(!box) return; const amt=num($('fAmt').value);
+      if(!st.splitManual){ const sp=autoSplit(amt); box.querySelectorAll('[data-sp]').forEach(i=>i.value=fmtN(sp[i.dataset.sp])||'0'); }
+      let tot=0; box.querySelectorAll('[data-sp]').forEach(i=>tot+=num(i.value)); const d=amt-tot;
+      $('spInfo').innerHTML = d===0? (st.splitManual?'✓ Pas (manual)':'✓ Sesuai persen') : `<b style="color:var(--exp)">${d>0?'Kurang':'Lebih'} ${rp(Math.abs(d))}</b>`; }
+    if($('splitBox')){
+      $('fAmt').addEventListener('input',refreshSplit);
+      $('splitBox').querySelectorAll('[data-sp]').forEach(i=>i.addEventListener('input',()=>{ i.value=fmtN(num(i.value)); st.splitManual=true; refreshSplit(); }));
+      $('spAuto').onclick=()=>{ st.splitManual=false; refreshSplit(); };
+      refreshSplit();
+    }
+    if($('envPick')) bindEnvPicker(st);
     $('sheet').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{keep();st.type=b.dataset.t;draw();});
-    $('sheet').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.cat=b.dataset.c;$('sheet').querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('on',x===b));});
+    $('sheet').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.cat=b.dataset.c;$('sheet').querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('on',x===b)); if(st.type==='out'&&!st.envManual) setEnvPick(autoEnv({type:'out',cat:st.cat}));});
     bindBankPicker(st);
     $('fX').onclick=close;
     if(edit) $('fDel').onclick=()=>confirmBox('Hapus transaksi ini?',()=>del('tx',t.id).then(ok=>ok&&toast('Transaksi dihapus')));
@@ -861,6 +970,12 @@ function txForm(t,preset={}){
       $('fOk').disabled=true;
       rememberBank(st.bank);
       const data={type:st.type,amount:st.amount,cat:st.cat,bank:st.bank||'',date:st.date||today(),note:st.note.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null};
+      if(feat('alloc')){
+        if(st.type==='out') data.env = st.envManual&&st.env? st.env : autoEnv({type:'out',cat:st.cat});
+        else { const sp={}; let tot=0; $('splitBox').querySelectorAll('[data-sp]').forEach(i=>{ const v=num(i.value); sp[i.dataset.sp]=v; tot+=v; });
+          if(tot!==st.amount){ toast('Pembagian amplop belum pas dengan jumlah pemasukan'); $('fOk').disabled=false; return; }
+          data.split=sp; }
+      } else { if(t?.env) data.env=t.env; if(t?.split) data.split=t.split; }
       if(await save('tx',t?.id||uid(),data)){ close(); toast(edit?'Tersimpan ✓':(st.type==='in'?'Alhamdulillah, pemasukan tercatat 💰':'Tercatat ✓')); } else $('fOk').disabled=false; };
     if(!edit) setTimeout(()=>$('fAmt')?.focus(),150);
   };
@@ -868,6 +983,61 @@ function txForm(t,preset={}){
 }
 function defaultDate(){ return S.tab==='cal'? S.calDay : today(); }
 
+function envSheet(k){
+  const e=envK(k); if(!e) return; const [a,b]=monthRange(S.month); const x=envStats(a,b)[k];
+  const hist=S.tx.filter(t=>envEffect(t)[k]!==undefined).sort(byNew).slice(0,15);
+  const catsTxt=(e.cats||[]).length? e.cats.map(c=>catIcon('out',c)+' '+esc(c)).join(', ') : '—';
+  open(`<h3>${esc(e.e)} ${esc(e.n)}</h3><div class="balbig" style="${x.bal<0?'color:var(--exp)':''}">${rp(x.bal)}</div>
+  <p class="sub">Dapat <b>${+e.pct||0}%</b> dari setiap pemasukan. Kategori otomatis: ${catsTxt}</p>
+  <div class="kpi"><div><small>Sisa bln lalu</small><b>${rpS(x.before)}</b></div><div><small>Masuk ${MONTHS[+S.month.slice(5)-1].slice(0,3)}</small><b style="color:var(--inc)">${rpS(x.inn)}</b></div><div><small>Terpakai</small><b style="color:var(--exp)">${rpS(x.out)}</b></div></div>
+  <div class="actions"><button class="btn ghost" data-act="envSetup">Atur alokasi</button><button class="btn" data-act="envMove" data-k="${esc(k)}">↔ Pindah dana</button></div>
+  <label>Riwayat</label>${hist.length?`<ul class="list">${hist.map(t=>{ const v=envEffect(t)[k]; return txRow(t).replace(/<div class="amt [^"]*">[^<]*<\/div><\/li>$/,`<div class="amt ${v>=0?'in':'out'}">${v>=0?'+':'−'}${rp(Math.abs(v))}</div></li>`); }).join('')}</ul>`:'<p class="hint">Belum ada riwayat.</p>'}`);
+}
+function envMoveForm(fromK,t){
+  const E=envs(); const st={from:t?.from||fromK||E[0].k,to:t?.to||(E.find(e=>e.k!==(t?.from||fromK||E[0].k))||E[0]).k};
+  const bal=envStats();
+  const chips=(name,sel)=>`<div class="picks">${E.map(e=>`<button type="button" data-${name}="${esc(e.k)}" class="${e.k===sel?'on':''}">${esc(e.e)} ${esc(e.n)} <small style="color:var(--muted)">${rpS(bal[e.k].bal)}</small></button>`).join('')}</div>`;
+  open(`<h3>↔ Pindah dana antar amplop</h3><p class="sub">Misalnya Entertain habis dan mau ambil dari Operasional. Saldo kas tidak berubah.</p>
+  <label>Dari amplop</label>${chips('fr',st.from)}<label>Ke amplop</label>${chips('to',st.to)}
+  <label>Jumlah</label><input class="mny money" id="vAmt" inputmode="numeric" placeholder="Rp 0" value="${fmtN(t?.amount)}">
+  <div class="two"><div><label>Tanggal</label><input type="date" id="vDate" value="${t?.date||defaultDate()}"></div><div><label>Catatan</label><input id="vNote" maxlength="120" value="${esc(t?.note||'')}" placeholder="opsional"></div></div>
+  <div class="actions">${t?'<button class="btn danger" id="vDel">Hapus</button>':''}<button class="btn ghost" id="vX">Batal</button><button class="btn" id="vOk">Pindahkan</button></div>`);
+  $('sheet').querySelectorAll('[data-fr]').forEach(b=>b.onclick=()=>{st.from=b.dataset.fr;$('sheet').querySelectorAll('[data-fr]').forEach(x=>x.classList.toggle('on',x===b));});
+  $('sheet').querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>{st.to=b.dataset.to;$('sheet').querySelectorAll('[data-to]').forEach(x=>x.classList.toggle('on',x===b));});
+  $('vX').onclick=close;
+  if(t) $('vDel').onclick=()=>confirmBox('Hapus pemindahan ini?',()=>del('tx',t.id).then(ok=>ok&&toast('Dihapus')));
+  $('vOk').onclick=async()=>{ const amount=num($('vAmt').value); if(!amount){toast('Isi jumlahnya dulu');return} if(st.from===st.to){toast('Pilih amplop yang berbeda');return}
+    $('vOk').disabled=true;
+    if(await save('tx',t?.id||uid(),{type:'envmove',from:st.from,to:st.to,amount,cat:'Amplop',date:$('vDate').value||today(),note:$('vNote').value.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null})){ close(); toast('Dana dipindahkan 💌'); } else $('vOk').disabled=false; };
+}
+function envSetup(){
+  let list=envs().map(e=>({...e,cats:[...(e.cats||[])]})); const startBal={...(S.config.envStart||{})};
+  const draw=()=>{ const tot=list.reduce((a,e)=>a+(+e.pct||0),0); const y=$('sheet').scrollTop;
+    open(`<h3>💌 Alokasi dana</h3><p class="sub">Setiap pemasukan otomatis dibagi ke amplop sesuai persen. Pengeluaran mengurangi amplopnya. Sisa amplop terbawa ke bulan berikutnya.</p>
+    ${list.map((e,i)=>`<div class="envedit"><div class="r1"><input class="em" data-i="${i}" data-f="e" maxlength="4" value="${esc(e.e)}" aria-label="Ikon"><input data-i="${i}" data-f="n" maxlength="24" value="${esc(e.n)}" aria-label="Nama amplop"><input class="pc" data-i="${i}" data-f="pct" inputmode="numeric" value="${+e.pct||0}" aria-label="Persen"><span style="font-weight:800">%</span>${list.length>1?`<button class="x" data-rm="${i}" aria-label="Hapus">✕</button>`:''}</div>
+      <details><summary>Kategori pengeluaran otomatis (${e.cats.length}) · saldo awal ${rpS(startBal[e.k]||0)}</summary>
+      <div class="picks" style="margin-top:8px">${OUT_CATS.map(([c,em])=>`<button type="button" data-cat="${esc(c)}" data-i="${i}" class="${e.cats.includes(c)?'on':''}">${em} ${esc(c)}</button>`).join('')}</div>
+      <div class="budget-in" style="border:0"><span>Saldo awal amplop<small>Uang yang sudah disisihkan sebelum mulai</small></span><input class="mny" inputmode="numeric" data-sb="${esc(e.k)}" value="${fmtN(startBal[e.k])}" placeholder="0"></div></details></div>`).join('')}
+    <button class="btn ghost" style="width:100%" id="enAdd">＋ Tambah amplop</button>
+    <div class="pcttotal ${tot===100?'':'bad'}"><span>Total</span><span>${tot}% ${tot===100?'✓':'(harus 100%)'}</span></div>
+    <p class="hint">Perubahan persen hanya berlaku untuk pemasukan baru. Pemasukan lama tetap memakai pembagian saat dicatat.</p>
+    <div class="actions"><button class="btn ghost" id="enX">Batal</button><button class="btn" id="enOk" ${tot===100?'':'disabled'}>Simpan</button></div>`);
+    $('sheet').scrollTop=y;
+    const keepAll=()=>{ $('sheet').querySelectorAll('[data-f]').forEach(inp=>{ const e=list[+inp.dataset.i]; const f=inp.dataset.f; e[f]= f==='pct'? Math.min(100,num(inp.value)) : inp.value.trim(); }); $('sheet').querySelectorAll('[data-sb]').forEach(inp=>{ const v=num(inp.value); if(v) startBal[inp.dataset.sb]=v; else delete startBal[inp.dataset.sb]; }); };
+    $('sheet').querySelectorAll('[data-f="pct"]').forEach(inp=>inp.addEventListener('input',()=>{ keepAll(); const t3=list.reduce((x,e)=>x+(+e.pct||0),0); const box=$('sheet').querySelector('.pcttotal');
+      box.classList.toggle('bad',t3!==100); box.lastElementChild.textContent=t3+'% '+(t3===100?'✓':'(harus 100%)'); $('enOk').disabled=t3!==100; }));
+    $('sheet').querySelectorAll('[data-sb]').forEach(inp=>inp.addEventListener('input',()=>{inp.value=fmtN(num(inp.value));}));
+    $('sheet').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{ keepAll(); const c=b.dataset.cat, i=+b.dataset.i; const on=list[i].cats.includes(c);
+      list.forEach(e=>e.cats=e.cats.filter(x=>x!==c)); if(!on) list[i].cats.push(c); const open_=[...$('sheet').querySelectorAll('details')].map(d=>d.open); draw(); $('sheet').querySelectorAll('details').forEach((d,j)=>d.open=open_[j]); });
+    $('sheet').querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ keepAll(); list.splice(+b.dataset.rm,1); draw(); });
+    $('enAdd').onclick=()=>{ keepAll(); list.push({k:'env'+Date.now().toString(36),n:'Amplop baru',e:'💌',pct:0,cats:[]}); draw(); };
+    $('enX').onclick=close;
+    $('enOk').onclick=async()=>{ keepAll(); const t2=list.reduce((a,e)=>a+(+e.pct||0),0); if(t2!==100){toast('Total persen harus 100%');draw();return}
+      if(list.some(e=>!e.n)){toast('Beri nama setiap amplop');return}
+      const clean=list.map(e=>({k:e.k,n:e.n.slice(0,24),e:(e.e||'💌').slice(0,4),pct:+e.pct||0,cats:e.cats}));
+      if(await saveConfig({...S.config,envs:clean,envStart:startBal})){ close(); toast('Alokasi dana tersimpan 💌'); } };
+  }; draw();
+}
 function pocketSheet(k){
   const p=pk(k); const b=pocketBal(k);
   const hist=S.tx.filter(t=>t.pocket===k).sort(byNew).slice(0,8);
@@ -883,26 +1053,27 @@ function pocketSheet(k){
 }
 function pocketMove(k,t,dir){
   if(t && t.type==='adj') return pocketAdj(t.pocket,t);
-  let st={k:k||t?.pocket||'rekening',dir:t?.dir||dir||'in',bank:t?(t.bank||''):(lastBank()&&lastBank()!=='Tunai'?lastBank():'')};
+  let st={k:k||t?.pocket||'rekening',dir:t?.dir||dir||'in',bank:t?(t.bank||''):(lastBank()&&lastBank()!=='Tunai'?lastBank():''),env:t?.env||'',envManual:!!t?.env};
   const draw=()=>{
     open(`<h3>${t?'Ubah':''} ${st.dir==='in'?'Menabung':'Tarik tabungan'}</h3>
     <p class="sub">${st.dir==='in'?'Uang dipindah dari kas/dompet ke kantong tabungan.':'Uang dikembalikan dari tabungan ke kas.'} Saldo kas: ${rp(cash())}</p>
     <div class="seg"><button data-dir="in" class="${st.dir==='in'?'on':''}">↓ Setor</button><button data-dir="out" class="${st.dir==='out'?'on':''}">↑ Tarik</button></div>
     <label>Kantong</label><div class="catgrid">${POCKETS.map(p=>`<button data-k="${p.k}" class="${st.k===p.k?'on':''}"><span>${p.e}</span>${esc(p.n)}</button>`).join('')}</div>
     ${bankPicker(st.bank, st.dir==='in'?'Disimpan di rekening':'Ditarik dari rekening')}
+    ${feat('alloc')? envPicker(st.env||autoEnv({type:'save',pocket:st.k}), st.dir==='in'?'Ambil dari amplop':'Kembalikan ke amplop') : ''}
     <label>Jumlah</label><input class="mny money" id="mAmt" inputmode="numeric" placeholder="Rp 0" value="${fmtN(t?.amount)}">
     <div class="two"><div><label>Tanggal</label><input type="date" id="mDate" value="${t?.date||defaultDate()}"></div><div><label>Catatan</label><input id="mNote" maxlength="120" value="${esc(t?.note||'')}" placeholder="opsional"></div></div>
     <div class="actions">${t?'<button class="btn danger" id="mDel">Hapus</button>':''}<button class="btn ghost" id="mX">Batal</button><button class="btn" id="mOk">Simpan</button></div>`);
     $('sheet').querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{st.dir=b.dataset.dir;const a=$('mAmt').value,d=$('mDate').value,n=$('mNote').value;draw();$('mAmt').value=a;$('mDate').value=d;$('mNote').value=n;});
-    $('sheet').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{st.k=b.dataset.k;$('sheet').querySelectorAll('[data-k]').forEach(x=>x.classList.toggle('on',x===b));});
-    bindBankPicker(st);
+    $('sheet').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{st.k=b.dataset.k;$('sheet').querySelectorAll('[data-k]').forEach(x=>x.classList.toggle('on',x===b)); if(!st.envManual) setEnvPick(autoEnv({type:'save',pocket:st.k}));});
+    bindBankPicker(st); bindEnvPicker(st);
     $('mX').onclick=close;
     if(t) $('mDel').onclick=()=>confirmBox('Hapus catatan tabungan ini?',()=>del('tx',t.id).then(ok=>ok&&toast('Dihapus')));
     $('mOk').onclick=async()=>{ const amount=num($('mAmt').value); if(!amount){toast('Isi jumlahnya dulu');return}
       if(st.dir==='out' && amount>pocketBal(st.k)+(t&&t.dir==='out'&&t.pocket===st.k?t.amount:0)){toast('Saldo '+pk(st.k).n+' tidak cukup');return}
       $('mOk').disabled=true;
       rememberBank(st.bank);
-      const data={type:'save',pocket:st.k,dir:st.dir,bank:st.bank||'',amount,cat:'Tabungan',date:$('mDate').value||today(),note:$('mNote').value.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null};
+      const data={type:'save',pocket:st.k,dir:st.dir,bank:st.bank||'',env:feat('alloc')?(st.envManual&&st.env?st.env:(autoEnv({type:'save',pocket:st.k})||'')):(t?.env||''),amount,cat:'Tabungan',date:$('mDate').value||today(),note:$('mNote').value.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null};
       if(await save('tx',t?.id||uid(),data)){ close(); toast(st.dir==='in'?'Mantap, tabungan bertambah 🌱':'Penarikan tercatat'); } else $('mOk').disabled=false; };
   };
   draw();
@@ -948,21 +1119,22 @@ function goalPick(){
 function goalDeposit(id,t){
   const g=S.goals.find(x=>x.id===id); if(!g){toast('Goal tidak ditemukan');return} const s=goalStats(g);
   const sug = s.perMonth&&s.remain? Math.round(Math.min(s.perMonth,s.remain)) : 0;
-  const bst={bank:t?(t.bank||''):(lastBank()&&lastBank()!=='Tunai'?lastBank():'')};
+  const bst={bank:t?(t.bank||''):(lastBank()&&lastBank()!=='Tunai'?lastBank():''),env:t?.env||'',envManual:!!t?.env};
   open(`<h3>${esc(g.emoji||'🎯')} Setor ke ${esc(g.name)}</h3><p class="sub">${rpS(s.saved)} dari ${rpS(g.target)} terkumpul. Setoran diambil dari kas (${rp(cash())}).</p>
   <input class="mny money" id="dAmt" inputmode="numeric" placeholder="Rp 0" value="${fmtN(t?t.amount:sug)}">
   ${!t&&s.remain?`<div class="picks" style="margin-top:10px">${[100000,500000,1000000].map(v=>`<button data-v="${v}">+${rpT(v)}</button>`).join('')}${sug?`<button data-v="${sug}" data-set="1">Saran ${rpT(sug)}</button>`:''}<button data-v="${s.remain}" data-set="1">Lunasi ${rpT(s.remain)}</button></div>`:''}
   ${bankPicker(bst.bank,'Disimpan di rekening')}
+  ${feat('alloc')? envPicker(bst.env||autoEnv({type:'goal'}),'Ambil dari amplop') : ''}
   <div class="two"><div><label>Tanggal</label><input type="date" id="dDate" value="${t?.date||defaultDate()}"></div><div><label>Catatan</label><input id="dNote" maxlength="120" value="${esc(t?.note||'')}" placeholder="opsional"></div></div>
   <div class="actions">${t?'<button class="btn danger" id="dDel">Hapus</button>':''}<button class="btn ghost" id="dX">Batal</button><button class="btn" id="dOk">Simpan</button></div>`);
   $('sheet').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ const v=+b.dataset.v; $('dAmt').value=fmtN(b.dataset.set?v:num($('dAmt').value)+v); });
-  bindBankPicker(bst);
+  bindBankPicker(bst); bindEnvPicker(bst);
   $('dX').onclick=close;
   if(t) $('dDel').onclick=()=>confirmBox('Hapus setoran ini?',()=>del('tx',t.id).then(ok=>ok&&toast('Setoran dihapus')));
   $('dOk').onclick=async()=>{ const amount=num($('dAmt').value); if(!amount){toast('Isi jumlahnya dulu');return}
     $('dOk').disabled=true; const before=s.remain>0;
     rememberBank(bst.bank);
-    const data={type:'goal',goalId:id,bank:bst.bank||'',amount,cat:'Goal',date:$('dDate').value||today(),note:$('dNote').value.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null};
+    const data={type:'goal',goalId:id,bank:bst.bank||'',env:feat('alloc')?(bst.envManual&&bst.env?bst.env:(autoEnv({type:'goal'})||'')):(t?.env||''),amount,cat:'Goal',date:$('dDate').value||today(),note:$('dNote').value.trim().slice(0,120),createdAt:t?.createdAt||new Date().toISOString(),by:me||null};
     if(await save('tx',t?.id||uid(),data)){ close(); const now=goalSaved(id)>=g.target; if(before&&now){confetti();toast('MasyaAllah, goal tercapai! 🎉');} else toast('Setoran tercatat · '+Math.floor(goalStats(g).pct)+'% 🎯'); } else $('dOk').disabled=false; };
 }
 function goalForm(g){
@@ -1017,6 +1189,7 @@ function settings(){
   <div class="glist" style="margin-top:12px">
     <button class="gitem" data-act="appearance"><div class="ic">🎨</div><div class="gm"><b>Tampilan & tema</b><small>Pantai, Bunga, Galaksi, Gunung, warna, mode gelap</small></div></button>
     <button class="gitem" data-act="bookEdit" data-k="${esc(keyOf(bk))}"><div class="ic">${esc(bk.emoji||'📁')}</div><div class="gm"><b>Atur pos ini</b><small>Nama, ikon, dan fitur yang aktif</small></div></button>
+    ${feat('alloc')?'<button class="gitem" data-act="envSetup"><div class="ic">💌</div><div class="gm"><b>Alokasi dana</b><small>Persen amplop & kategori otomatis</small></div></button>':''}
     <button class="gitem" data-act="pocketSetup"><div class="ic">👛</div><div class="gm"><b>Saldo awal</b><small>Kas dan 4 kantong tabungan</small></div></button>
     <button class="gitem" data-act="budget"><div class="ic">🧭</div><div class="gm"><b>Anggaran bulanan</b><small>Batas pengeluaran per kategori</small></div></button>
     <button class="gitem" data-act="banks"><div class="ic">💳</div><div class="gm"><b>Rekening & e-wallet</b><small>Atur daftar bank yang muncul saat mencatat</small></div></button>
@@ -1028,7 +1201,7 @@ function settings(){
 }
 async function exportCsv(){
   const rows=[['tanggal','jenis','kategori','rekening','kantong/goal','jumlah','catatan']];
-  S.tx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{ const tgt=t.type==='goal'?(S.goals.find(g=>g.id===t.goalId)?.name||''):t.pocket?(pk(t.pocket)?.n||''):''; const jenis={in:'Pemasukan',out:'Pengeluaran',goal:'Setor goal',save:t.dir==='out'?'Tarik tabungan':'Setor tabungan',adj:'Penyesuaian'}[t.type]; rows.push([t.date,jenis,t.cat||'',t.bank||'',tgt,t.amount,(t.note||'').replace(/"/g,'""')]); });
+  S.tx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{ const tgt=t.type==='goal'?(S.goals.find(g=>g.id===t.goalId)?.name||''):t.pocket?(pk(t.pocket)?.n||''):''; const jenis={in:'Pemasukan',out:'Pengeluaran',goal:'Setor goal',save:t.dir==='out'?'Tarik tabungan':'Setor tabungan',adj:'Penyesuaian',envmove:'Pindah amplop'}[t.type]; rows.push([t.date,jenis,t.cat||'',t.bank||'',tgt,t.amount,(t.note||'').replace(/"/g,'""')]); });
   const csv=rows.map(r=>r.map(x=>`"${x}"`).join(',')).join('\n');
   try{ await navigator.clipboard.writeText(csv); toast('Data disalin — tempel di spreadsheet 📋'); }catch(e){ open(`<h3>Salin data</h3><p class="sub">Pilih semua lalu salin:</p><textarea style="min-height:240px;font-size:12px">${esc(csv)}</textarea>`); }
 }
@@ -1162,6 +1335,9 @@ document.addEventListener('click',e=>{
     case 'settings': settings(); break;
     case 'exportCsv': exportCsv(); break;
     case 'banks': bankManager(); break;
+    case 'env': envSheet(d.k); break;
+    case 'envSetup': envSetup(); break;
+    case 'envMove': envMoveForm(d.k||null); break;
     case 'books': booksSheet(); break;
     case 'appearance': appearance(); break;
     case 'hostMembers': window.kkHost&&window.kkHost.members(); break;
