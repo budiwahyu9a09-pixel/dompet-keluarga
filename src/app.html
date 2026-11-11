@@ -640,7 +640,8 @@ function avgMonthlyOut(){ const ms=[1,2,3].map(i=>shiftMonth(today().slice(0,7),
 // ================= render =================
 function render(){
   const h=new Date().getHours();
-  const scK=applyTheme(); $('greet').textContent=(h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam')+' '+SCENES[scK].greet+' · '+new Date().toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'});
+  const scK=applyTheme(); const pf=window.kkHost&&window.kkHost.profile? window.kkHost.profile() : {};
+  $('greet').textContent=(h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam')+(pf.name?', '+pf.name+(pf.title==='Ibu Negara'?' 👑':''):'')+' '+SCENES[scK].greet+(pf.name?'':' · '+new Date().toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'}));
   const bk=curBook(); $('ttl').textContent=bk.name; $('bookEmoji').textContent=bk.emoji||'📁'; $('sync').textContent=syncLabel();
   let vis=0; document.querySelectorAll('nav button').forEach(b=>{ const t=b.dataset.tab; const show=!['goals','cal','notes'].includes(t)||feat(t); b.style.display=show?'':'none'; if(show) vis++; });
   document.querySelector('nav .in').style.gridTemplateColumns='repeat('+vis+',1fr)';
@@ -1195,7 +1196,8 @@ function settings(){
     <button class="gitem" data-act="banks"><div class="ic">💳</div><div class="gm"><b>Rekening & e-wallet</b><small>Atur daftar bank yang muncul saat mencatat</small></div></button>
     <button class="gitem" data-act="exportCsv"><div class="ic">📤</div><div class="gm"><b>Salin data (CSV)</b><small>Untuk dibuka di Excel / Google Sheets</small></div></button>
     ${window.kkHost?`<button class="gitem" data-act="hostMembers"><div class="ic">👨‍👩‍👧</div><div class="gm"><b>Anggota keluarga</b><small>Email yang boleh membuka pos Bersama</small></div></button>
-    <button class="gitem" data-act="hostSignOut"><div class="ic">🚪</div><div class="gm"><b>Keluar</b><small>${esc(window.kkHost.email()||'')}</small></div></button>`:''}
+    <button class="gitem" data-act="hostPass"><div class="ic">🔑</div><div class="gm"><b>Ganti password</b><small>Untuk akunmu sendiri</small></div></button>
+    <button class="gitem" data-act="hostSignOut"><div class="ic">🚪</div><div class="gm"><b>Keluar</b><small>${esc(window.kkHost.email()||'')}${window.kkHost.profile&&window.kkHost.profile().title?' · '+esc(window.kkHost.profile().title)+' 👑':''}</small></div></button>`:''}
   </div>
   <p class="hint" style="margin-top:14px">💑 Pos <b>Bersama</b> bisa dipakai bersama pasangan: ${window.kkHost?'tambahkan emailnya di <b>Anggota keluarga</b>':'bagikan halaman ini dengan akses <b>Contributor</b>'} — kalian akan melihat dan mengisi data yang sama. Pos <b>Pribadi</b> 🔒 hanya terlihat olehmu.</p>`);
 }
@@ -1342,6 +1344,7 @@ document.addEventListener('click',e=>{
     case 'appearance': appearance(); break;
     case 'hostMembers': window.kkHost&&window.kkHost.members(); break;
     case 'hostSignOut': window.kkHost&&window.kkHost.signOut(); break;
+    case 'hostPass': window.kkHost&&window.kkHost.changePassword(); break;
     case 'bookGo': if(e.target.closest('.ed')) break; close(); if(d.k!==S.bookKey){ switchBook(d.k); toast('Pindah ke '+curBook().name); } break;
     case 'bookNew': bookForm(); break;
     case 'bookEdit': { const k=parseKey(d.k); bookForm(allBooks().find(b=>b.id===k.id&&b.private===k.private)); break; }

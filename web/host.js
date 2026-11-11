@@ -7,6 +7,8 @@
   const sb = supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: true, autoRefreshToken: true } });
   let session = null, resolveReady;
   const ready = new Promise(r => (resolveReady = r));
+  const USER_DOMAIN = 'dompet.local'; // username accounts are stored as <username>@dompet.local
+  const showId = em => (em || '').endsWith('@' + USER_DOMAIN) ? em.split('@')[0] : em;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = id => document.getElementById(id);
   const toast = m => { const t = $('toast'); if (!t) return; t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); };
@@ -33,7 +35,7 @@
     return `<div class="box"><div class="logo">💰</div><h2>Dompet Keluarga</h2>
       <p class="s">${reg ? 'Buat akun dengan email yang sudah didaftarkan sebagai anggota keluarga.' : 'Masuk untuk membuka keuangan & goals keluargamu.'}</p>
       <form id="kkForm" autocomplete="on">
-        <label>Email</label><input id="kkEmail" type="email" autocomplete="email" required placeholder="nama@email.com">
+        <label>${reg ? 'Email' : 'Email atau username'}</label><input id="kkEmail" type="${reg ? 'email' : 'text'}" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required placeholder="${reg ? 'nama@email.com' : 'nama@email.com atau username'}">
         <label>Password</label><input id="kkPass" type="password" autocomplete="${reg ? 'new-password' : 'current-password'}" required minlength="6" placeholder="minimal 6 karakter">
         ${reg ? '<label>Ulangi password</label><input id="kkPass2" type="password" autocomplete="new-password" required minlength="6">' : ''}
         <button class="btn" id="kkGo" type="submit">${reg ? 'Daftar & masuk' : 'Masuk'}</button>
@@ -49,7 +51,8 @@
     $('kkSwitch').onclick = () => { mode = mode === 'login' ? 'register' : 'login'; showLogin(); };
     $('kkForm').onsubmit = async e => {
       e.preventDefault(); showErr('');
-      const email = $('kkEmail').value.trim().toLowerCase(), pass = $('kkPass').value;
+      const raw = $('kkEmail').value.trim().toLowerCase(), pass = $('kkPass').value;
+      const email = raw.includes('@') ? raw : raw.replace(/[^a-z0-9._-]/g, '') + '@' + USER_DOMAIN;
       if (mode === 'register' && pass !== $('kkPass2').value) return showErr('Password tidak sama.');
       $('kkGo').disabled = true; $('kkGo').textContent = 'Sebentar…';
       try {
@@ -62,7 +65,7 @@
         session = data.session; await start();
       } catch (err) {
         const m = err.message || '';
-        showErr(/invalid login/i.test(m) ? 'Email atau password salah.'
+        showErr(/invalid login/i.test(m) ? 'Email/username atau password salah.'
           : /not confirmed/i.test(m) ? 'Email ini belum terdaftar sebagai anggota keluarga. Minta anggota keluarga menambahkan emailmu di ⚙️ → Anggota keluarga, lalu daftar lagi.'
           : /rate limit|too many/i.test(m) ? 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'
           : /weak|at least/i.test(m) ? 'Password terlalu lemah, gunakan minimal 6 karakter.'
@@ -178,9 +181,10 @@
       sheet.innerHTML = `<h3>Anggota keluarga 👨‍👩‍👧</h3>
         <p class="sub">Email di sini boleh membuka semua pos <b>Bersama</b>. Pos <b>Pribadi</b> 🔒 tetap hanya untuk pemiliknya. Setelah ditambahkan, anggota baru tinggal buka app ini lalu pilih <b>Daftar</b>.</p>
         ${error ? '<p class="hint">Gagal memuat daftar.</p>' : list.map(m => `<div class="bankrow"><i class="bb" style="background:var(--pri-soft)">${esc(m.email[0].toUpperCase())}</i>
-          <div class="bm"><b>${esc(m.email)}</b><small>${m.email === (session.user.email || '').toLowerCase() ? 'Kamu' : 'Anggota'}</small></div>
+          <div class="bm"><b>${esc(showId(m.email))}</b><small>${m.email === (session.user.email || '').toLowerCase() ? 'Kamu' : 'Anggota'}</small></div>
           ${m.email === (session.user.email || '').toLowerCase() ? '' : `<button class="x" data-rm="${esc(m.email)}" aria-label="Hapus">✕</button>`}</div>`).join('')}
-        <div style="display:flex;gap:8px;margin-top:12px"><input id="mmNew" type="email" placeholder="email pasangan / keluarga"><button class="btn sm" id="mmAdd">Tambah</button></div>
+        <p class="hint" style="margin-top:10px">Akun dengan username (tanpa email) dibuat lewat Claude.</p>
+        <div style="display:flex;gap:8px;margin-top:8px"><input id="mmNew" type="email" placeholder="email pasangan / keluarga"><button class="btn sm" id="mmAdd">Tambah</button></div>
         <div class="actions"><button class="btn ghost" id="mmClose">Tutup</button></div>`;
       sheet.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
         const { error } = await sb.from('members').delete().eq('email', b.dataset.rm);
@@ -198,5 +202,28 @@
     ov.classList.add('show'); sheet.innerHTML = '<p class="hint">Memuat…</p>'; draw();
   }
   async function signOut() { await sb.auth.signOut(); location.reload(); }
-  window.kkHost = { members, signOut, email: () => (session ? session.user.email : '') };
+  function changePassword() {
+    const sheet = $('sheet'), ov = $('ov');
+    sheet.innerHTML = `<h3>Ganti password 🔑</h3><p class="sub">Untuk akun <b>${esc(showId(session.user.email))}</b>.</p>
+      <label>Password baru</label><input id="cpA" type="password" autocomplete="new-password" minlength="6" placeholder="minimal 6 karakter">
+      <label>Ulangi password baru</label><input id="cpB" type="password" autocomplete="new-password">
+      <div class="actions"><button class="btn ghost" id="cpX">Batal</button><button class="btn" id="cpOk">Simpan</button></div>`;
+    ov.classList.add('show');
+    $('cpX').onclick = () => ov.classList.remove('show');
+    $('cpOk').onclick = async () => {
+      const a = $('cpA').value, b = $('cpB').value;
+      if (a.length < 6) return toast('Password minimal 6 karakter');
+      if (a !== b) return toast('Password tidak sama');
+      $('cpOk').disabled = true;
+      const { error } = await sb.auth.updateUser({ password: a });
+      if (error) { $('cpOk').disabled = false; return toast(/same|different/i.test(error.message) ? 'Password baru harus berbeda' : 'Gagal: ' + error.message); }
+      ov.classList.remove('show'); toast('Password diganti ✓');
+    };
+  }
+  const umeta = () => (session && session.user.user_metadata) || {};
+  window.kkHost = {
+    members, signOut, changePassword,
+    email: () => (session ? showId(session.user.email) : ''),
+    profile: () => ({ name: umeta().display_name || '', title: umeta().title || '' })
+  };
 })();
