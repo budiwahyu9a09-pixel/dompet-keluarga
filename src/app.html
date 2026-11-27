@@ -453,8 +453,8 @@ function applyTheme(){
 if(mq.addEventListener) mq.addEventListener('change',()=>{ applyTheme(); });
 function bookSwatch(b){ const sc=SCENES[b.scene]&&b.scene!=='pastel'? SCENES[b.scene] : null; const ac=ACCENTS[b.theme]||ACCENTS.biru; return sc? sc.hero : `linear-gradient(135deg,${ac.h[0]},${ac.h[2]})`; }
 const BOOK_EMOJI=['🏠','👤','💼','🏪','👶','🎓','🕌','✈️','💍','🐱','🎮','💰'];
-const FEATURES=[['alloc','💌','Alokasi dana','Bagi pemasukan ke Operasional, Entertain, Darurat, Tabungan'],['pockets','🏦','Tabungan & kantong','Rekening, investasi, darurat, masa depan'],['goals','🎯','Goals','Target impian dengan progres'],['cal','📅','Kalender','Lihat transaksi & catatan per tanggal'],['notes','📝','Catatan harian','Mood, aktivitas, rasa syukur']];
-const ALL_ON={alloc:true,pockets:true,goals:true,cal:true,notes:true};
+const FEATURES=[['pockets','🏦','Tabungan & kantong','Rekening, investasi, darurat, masa depan'],['goals','🎯','Goals','Target impian dengan progres'],['cal','📅','Kalender','Lihat transaksi & catatan per tanggal'],['notes','📝','Catatan harian','Mood, aktivitas, rasa syukur']];
+const ALL_ON={pockets:true,goals:true,cal:true,notes:true};
 const DEFAULT_ENVS=[
   {k:'operasional',n:'Operasional',e:'🧾',pct:50,cats:['Makan & Dapur','Transportasi','Tagihan & Utilitas','Cicilan & Utang','Pendidikan','Kesehatan','Kebutuhan Rumah','Laundry','Anak','Lainnya']},
   {k:'entertain',n:'Entertain',e:'🎉',pct:15,cats:['Hiburan & Jajan','Keluarga & Sosial','Sedekah & Zakat']},
@@ -531,7 +531,7 @@ function allBooks(){
 }
 const keyOf = b => (b.private?'p:':'s:')+b.id;
 function curBook(){ const k=parseKey(S.bookKey); return allBooks().find(b=>b.id===k.id&&b.private===k.private) || {id:k.id,private:k.private,name:k.id==='main'?'Rumah Tangga':'…',emoji:k.id==='main'?'🏠':'📁',theme:'biru',features:ALL_ON}; }
-const feat = f => { const fs=curBook().features||ALL_ON; return fs[f]!==false; };
+const feat = f => { if(f==='alloc') return false; /* fitur alokasi dana dihapus (27 Nov) */ const fs=curBook().features||ALL_ON; return fs[f]!==false; };
 const canWrite = () => parseKey(S.bookKey).private || !S.readonly;
 function baseRef(key){ const k=parseKey(key); if(!k.private && k.id==='main') return null; return k.private? db.doc('data/users/'+me+'/'+k.id) : db.doc('books/'+k.id); }
 function colRef(name,key=S.bookKey){ const b=baseRef(key); return b? b.collection(name) : db.collection(name); }
@@ -1304,7 +1304,7 @@ function appearance(){
 function booksSheet(){
   const list=allBooks(); const cur=S.bookKey;
   open(`<h3>Pos keuangan</h3><p class="sub">Setiap pos punya transaksi, tabungan, goals, kalender, dan catatan sendiri.</p>
-  <div class="booklist">${list.map(b=>{ const k=keyOf(b); const nf=Object.values(b.features||ALL_ON).filter(x=>x!==false).length;
+  <div class="booklist">${list.map(b=>{ const k=keyOf(b); const nf=FEATURES.filter(([k])=>(b.features||ALL_ON)[k]!==false).length;
     return `<div class="bookrow ${k===cur?'on':''}" data-act="bookGo" data-k="${esc(k)}" role="button"><div class="be" style="background:${bookSwatch(b)}">${esc(b.emoji||'📁')}</div>
     <div class="bm"><b>${esc(b.name)}</b><small>${b.private?'🔒 Pribadi':'👥 Bersama'} · ${SCENES[b.scene]?SCENES[b.scene].e+' '+SCENES[b.scene].n:'🫧 Pastel'} · ${nf+2} fitur</small></div>
     <button class="ed" data-act="bookEdit" data-k="${esc(k)}" aria-label="Atur ${esc(b.name)}">✏️</button></div>`; }).join('')}</div>
