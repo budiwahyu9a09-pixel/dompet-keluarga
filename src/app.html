@@ -522,7 +522,7 @@ function confetti(){ const cols=['#7cc0ff','#ffb4c8','#a8ecd2','#c9b8ff','#ffe28
 // ================= data layer =================
 const mem={};  // memory fallback per book
 let unsubs=[];
-function memBook(k){ return mem[k]=mem[k]||{tx:[],goals:[],notes:[],config:{budgets:{},pocketStart:{}}}; }
+function memBook(k){ return mem[k]=mem[k]||{tx:[],goals:[],notes:[],archives:[],config:{budgets:{},pocketStart:{}}}; }
 function parseKey(k){ const [t,...r]=k.split(':'); return {private:t==='p', id:r.join(':')}; }
 function allBooks(){
   const sm=S.sharedBooks.find(b=>b.id==='main')||{};
@@ -565,8 +565,8 @@ function switchBook(key){
   if(key.startsWith('p:') && !me && db){ key='s:main'; }
   unsubs.forEach(u=>{try{u()}catch(e){}}); unsubs=[];
   S.bookKey=key; try{ localStorage.setItem('kk_book',key); }catch(e){}
-  if(!db){ const m=memBook(key); S.tx=m.tx; S.goals=m.goals; S.notes=m.notes; S.config=m.config; S.ready=true; S.animNext=true; fixTab(); render(); return; }
-  S.tx=[]; S.goals=[]; S.notes=[]; S.config={budgets:{},pocketStart:{}}; S.ready=false; render();
+  if(!db){ const m=memBook(key); S.tx=m.tx; S.goals=m.goals; S.notes=m.notes; S.config=m.config; S.archives=m.archives; S.ready=true; S.animNext=true; fixTab(); render(); return; }
+  S.tx=[]; S.goals=[]; S.notes=[]; S.archives=[]; S.config={budgets:{},pocketStart:{}}; S.ready=false; render();
   const seen={}; const KEYS=['tx','goals','notes','cfg']; const myKey=key;
   const timer=setTimeout(()=>{ if(S.bookKey===myKey && !S.ready){ S.ready=true; $('sync').textContent='Belum terhubung · data mungkin belum terbaru'; render(); } },10000);
   const mark=(k,snap)=>{ if(S.bookKey!==myKey) return; if(!seen[k] && snap.metadata && !snap.metadata.fromCache){ seen[k]=1; if(KEYS.every(x=>seen[x])){ clearTimeout(timer); S.ready=true; S.animNext=true; } } if(S.ready||KEYS.every(x=>seen[x])) render(); };
@@ -576,6 +576,7 @@ function switchBook(key){
     unsubs.push(colRef('goals',key).onSnapshot(sn=>{ if(S.bookKey!==myKey) return; S.goals=sn.docs.map(d=>({...d.data(),id:d.id})); mark('goals',sn); },err));
     unsubs.push(colRef('notes',key).onSnapshot(sn=>{ if(S.bookKey!==myKey) return; S.notes=sn.docs.map(d=>({...d.data(),id:d.id})); mark('notes',sn); },err));
     unsubs.push(cfgRef(key).onSnapshot(sn=>{ if(S.bookKey!==myKey) return; const d=sn.exists?sn.data():{}; S.config={budgets:{},pocketStart:{},...d}; mark('cfg',sn); },err));
+    unsubs.push(colRef('archives',key).onSnapshot(sn=>{ if(S.bookKey!==myKey) return; S.archives=sn.docs.map(d=>({...d.data(),id:d.id})); if(S.ready) render(); },()=>{}));
   }catch(e){ err(); }
 }
 let knownKeys=new Set(), firstCheck=false;
@@ -742,6 +743,7 @@ function vHome(){
     </div>`:''}
   </div>
 
+  ${archBanner(S.month)}
   ${feat('alloc')?envSection():''}
   ${feat('pockets')?`<div class="sec"><h2>Tabungan</h2><button class="lnk" data-act="pocketSetup">Atur saldo</button></div>
   <div class="totalsave"><small>Total semua kantong</small><b data-count="${bals.reduce((x,p)=>x+p.b,0)}">${rp(bals.reduce((x,p)=>x+p.b,0))}</b></div>
@@ -1248,6 +1250,7 @@ function settings(){
     <button class="gitem" data-act="pocketSetup"><div class="ic">👛</div><div class="gm"><b>Saldo awal</b><small>Kas dan 4 kantong tabungan</small></div></button>
     <button class="gitem" data-act="budget"><div class="ic">🧭</div><div class="gm"><b>Anggaran bulanan</b><small>Batas pengeluaran per kategori</small></div></button>
     <button class="gitem" data-act="banks"><div class="ic">💳</div><div class="gm"><b>Rekening & e-wallet</b><small>Atur daftar bank yang muncul saat mencatat</small></div></button>
+    <button class="gitem" data-act="archives"><div class="ic">🗄️</div><div class="gm"><b>Arsip bulanan</b><small>Simpan data satu bulan & mulai dari nol</small></div></button>
     <button class="gitem" data-act="exportCsv"><div class="ic">📤</div><div class="gm"><b>Salin data (CSV)</b><small>Untuk dibuka di Excel / Google Sheets</small></div></button>
     ${window.kkHost?`<button class="gitem" data-act="hostMembers"><div class="ic">👨‍👩‍👧</div><div class="gm"><b>Anggota keluarga</b><small>Email yang boleh membuka pos Bersama</small></div></button>
     <button class="gitem" data-act="hostPass"><div class="ic">🔑</div><div class="gm"><b>Ganti password</b><small>Untuk akunmu sendiri</small></div></button>
@@ -1353,6 +1356,52 @@ async function deleteBook(b){
     await cfgRef(key).delete(); await bookMetaRef(b).delete(); toast('Pos dihapus');
   }catch(e){ fail(e); }
 }
+// ----- arsip bulanan -----
+function archOf(m){ return (S.archives||[]).find(a=>a.month===m); }
+function archSums(a){ return sums(a.tx||[]); }
+function archBanner(m){ const a=archOf(m); if(!a) return '';
+  const s=archSums(a); return `<div class="card" data-act="archiveOpen" data-m="${m}" role="button" style="display:flex;gap:12px;align-items:center;cursor:pointer"><div class="ic" style="background:var(--lilac)">🗄️</div><div style="flex:1"><b style="font-size:13.5px">Data ${mLabel(m)} sudah diarsipkan</b><div class="hint">${(a.tx||[]).length} transaksi · masuk ${rpS(s.inc)} · keluar ${rpS(s.out)}. Ketuk untuk melihat.</div></div><span style="color:var(--muted)">›</span></div>`; }
+function archiveList(){
+  const list=(S.archives||[]).slice().sort((a,b)=>b.month.localeCompare(a.month));
+  const curM=today().slice(0,7); const months=[...new Set(S.tx.map(t=>t.date.slice(0,7)))].sort().reverse();
+  open(`<h3>🗄️ Arsip bulanan</h3><p class="sub">Arsipkan satu bulan untuk memulai dari nol. Transaksinya dipindah ke arsip (tidak hilang) dan bisa dilihat atau dikembalikan kapan saja.</p>
+  ${list.length? `<div class="booklist">${list.map(a=>{ const s=archSums(a); return `<div class="bookrow" data-act="archiveOpen" data-m="${a.month}" role="button"><div class="be" style="background:var(--lilac)">🗄️</div><div class="bm"><b>${mLabel(a.month)}</b><small>${(a.tx||[]).length} transaksi · masuk ${rpS(s.inc)} · keluar ${rpS(s.out)}</small></div><span style="color:var(--muted)">›</span></div>`; }).join('')}</div>` : '<p class="hint">Belum ada arsip.</p>'}
+  <label>Arsipkan bulan</label>
+  ${months.length? `<div class="picks">${months.map(m=>`<button type="button" data-act="archiveAsk" data-m="${m}">${mShort(m)} · ${S.tx.filter(t=>t.date.slice(0,7)===m).length} trx${m===curM?' (bulan ini)':''}</button>`).join('')}</div>` : '<p class="hint">Tidak ada transaksi aktif untuk diarsipkan.</p>'}`);
+}
+function archiveAsk(m){
+  const list=S.tx.filter(t=>t.date.slice(0,7)===m); const s=sums(list);
+  open(`<h3>Arsipkan ${mLabel(m)}?</h3><p class="sub">${list.length} transaksi (masuk ${rp(s.inc)}, keluar ${rp(s.out)}) dipindah ke arsip. Angka ${mLabel(m)} jadi 0 lagi, dan saldo kas, kantong & amplop dihitung tanpa transaksi ini. Saldo awal, anggaran, goals & catatan harian tidak berubah.</p>
+  <div class="actions"><button class="btn ghost" id="arX">Batal</button><button class="btn" id="arOk">🗄️ Arsipkan</button></div>`);
+  $('arX').onclick=close; $('arOk').onclick=async()=>{ $('arOk').disabled=true; if(await archiveMonth(m)){ close(); S.animNext=true; render(); toast(mLabel(m)+' diarsipkan · mulai dari nol ✨'); } else $('arOk').disabled=false; };
+}
+async function archiveMonth(m){
+  if(!canWrite()){toast('Akses kamu hanya lihat');return false}
+  const list=S.tx.filter(t=>t.date.slice(0,7)===m); if(!list.length){toast('Tidak ada transaksi');return false}
+  const prev=archOf(m); const ids=new Set(list.map(t=>t.id));
+  const doc={month:m,archivedAt:new Date().toISOString(),by:me||null,tx:[...((prev&&prev.tx)||[]).filter(t=>!ids.has(t.id)),...list.map(t=>({...t}))]};
+  if(!db){ const mb=memBook(S.bookKey); const i=mb.archives.findIndex(a=>a.month===m); if(i>=0) mb.archives[i]={...doc,id:m}; else mb.archives.push({...doc,id:m}); for(const t of list){ const j=S.tx.findIndex(x=>x.id===t.id); if(j>=0) S.tx.splice(j,1); } return true; }
+  try{ await colRef('archives').doc(m).set(doc); for(const t of list){ await colRef('tx').doc(t.id).delete(); } return true; }catch(e){ return fail(e); }
+}
+async function restoreMonth(m){
+  if(!canWrite()){toast('Akses kamu hanya lihat');return false}
+  const a=archOf(m); if(!a) return false;
+  if(!db){ for(const t of a.tx){ S.tx.push({...t}); } const mb=memBook(S.bookKey); mb.archives.splice(mb.archives.findIndex(x=>x.month===m),1); return true; }
+  try{ for(const t of a.tx){ const {id,...rest}=t; await colRef('tx').doc(id).set(rest); } await colRef('archives').doc(m).delete(); return true; }catch(e){ return fail(e); }
+}
+function archiveView(m){
+  const a=archOf(m); if(!a){ toast('Arsip tidak ditemukan'); return; }
+  const list=(a.tx||[]).slice().sort(byNew); const s=sums(list); const sp=catSpend(list);
+  const cats=Object.entries(sp).sort((x,y)=>y[1]-x[1]);
+  let html='',last=''; for(const t of list){ if(t.date!==last){ if(last) html+='</ul>'; html+=`<div class="day"><span>${dayRel(t.date)}</span></div><ul class="list">`; last=t.date; } html+=txRow(t).replace(' data-act="tx"','').replace('class="tx"','class="tx" style="cursor:default"'); } if(last) html+='</ul>';
+  open(`<h3>🗄️ Arsip ${mLabel(m)}</h3><p class="sub">Diarsipkan ${new Date(a.archivedAt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
+  <div class="kpi"><div><small>Masuk</small><b style="color:var(--inc)">${rpS(s.inc)}</b></div><div><small>Keluar</small><b style="color:var(--exp)">${rpS(s.out)}</b></div><div><small>Ditabung</small><b>${rpS(s.saved)}</b></div></div>
+  ${cats.length?`<label>Pengeluaran per kategori</label>${cats.map(([c,v])=>budRow(c,v,0,s.out)).join('')}`:''}
+  <label>${list.length} transaksi</label>${html||'<p class="hint">Kosong.</p>'}
+  <div class="actions"><button class="btn ghost" data-act="archives">‹ Semua arsip</button><button class="btn ghost" id="avR">↩ Kembalikan</button></div>`);
+  $('avR').onclick=()=>{ open(`<h3>Kembalikan ${mLabel(m)}?</h3><p class="sub">${list.length} transaksi dipindah lagi ke data aktif dan arsip ini dihapus.</p><div class="actions"><button class="btn ghost" id="rvX">Batal</button><button class="btn" id="rvOk">↩ Kembalikan</button></div>`);
+    $('rvX').onclick=()=>archiveView(m); $('rvOk').onclick=async()=>{ $('rvOk').disabled=true; if(await restoreMonth(m)){ close(); S.animNext=true; render(); toast(mLabel(m)+' dikembalikan ✓'); } else $('rvOk').disabled=false; }; };
+}
 function confirmBox(msg,yes){
   open(`<h3>${esc(msg)}</h3><p class="sub">Tindakan ini tidak bisa dibatalkan.</p><div class="actions"><button class="btn ghost" id="cN">Batal</button><button class="btn danger" style="flex:1" id="cY">Hapus</button></div>`);
   $('cN').onclick=close; $('cY').onclick=()=>{ close(); yes(); };
@@ -1391,6 +1440,9 @@ document.addEventListener('click',e=>{
     case 'settings': settings(); break;
     case 'exportCsv': exportCsv(); break;
     case 'banks': bankManager(); break;
+    case 'archives': archiveList(); break;
+    case 'archiveOpen': archiveView(d.m); break;
+    case 'archiveAsk': archiveAsk(d.m); break;
     case 'env': envSheet(d.k); break;
     case 'envSetup': envSetup(); break;
     case 'envMove': envMoveForm(d.k||null); break;
